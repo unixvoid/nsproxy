@@ -1,4 +1,4 @@
-package nsproxymanager
+package nsmanager
 
 import (
 	"fmt"
