@@ -4,7 +4,13 @@ import (
 	"flag"
 	"fmt"
 	"io/ioutil"
+	"log"
+	"net/http"
 	"os"
+	"strings"
+
+	"github.com/gorilla/mux"
+	"github.com/unixvoid/nsproxy/nsmanager"
 )
 
 /*
@@ -25,13 +31,9 @@ import (
 */
 
 func main() {
-	list := flag.Bool("l", false, "list records")
-	addReq := flag.String("add", "", "add record: <domain name> <ipv4 addr>")
-	remReq := flag.String("rm", "", "remove a record: <domain name>")
-	modReq := flag.String("modify", "", "modify record: <domain name> <ipv4 addr>")
-
+	rawPort := flag.String("p", "8054", "port to listen on")
 	flag.Parse()
-
+	port := fmt.Sprint(":", *rawPort)
 	// first thing to do is make a 'records/' dir
 	// if it does not exist
 	_, err := os.Stat("records/")
@@ -39,72 +41,42 @@ func main() {
 		os.Mkdir("records/", 0755)
 	}
 
-	if *list {
-		listEntries()
-	}
-
-	if *addReq != "" {
-		dn := *addReq
-		// the extra argument is the ip
-		ip := flag.Arg(0)
-		addEntry(dn, ip)
-	}
-
-	if *modReq != "" {
-		dn := *modReq
-		// the extra argument is the ip
-		ip := flag.Arg(0)
-		addEntry(dn, ip)
-	}
-
-	if *remReq != "" {
-		rm := *remReq
-		rmEntry(rm)
-	}
+	router := mux.NewRouter()
+	router.HandleFunc("/!{command}", dynamichandler).Methods("GET")
+	println("running on port", *rawPort)
+	log.Fatal(http.ListenAndServe(port, router))
 }
 
-func listEntries() {
-	// list records
-	println("-------------------------------------------")
-	files, _ := ioutil.ReadDir("records/")
-	for _, f := range files {
-		//print out filename followed by record
-		filepath := fmt.Sprintf("records/%s", f.Name())
-		cont, _ := ioutil.ReadFile(filepath)
-		//strip out trailing '.' from FQDM
-		formName := f.Name()[:len(f.Name())-1]
-		fmt.Printf("%-25s: %s", formName, cont)
-	}
-	println("-------------------------------------------")
-	return
-}
+func dynamichandler(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+	commArr := strings.SplitN(vars["command"], " ", 3)
+	command := commArr[0]
 
-func addEntry(dn, ip string) {
-	// add record
-	// more useable when the newline is appened to the end
-	ip = fmt.Sprintf("%s\n", ip)
+	switch command {
+	case "list":
+		fmt.Fprintln(w, "-------------------------------------------")
+		files, _ := ioutil.ReadDir("records/")
+		for _, f := range files {
+			//print out filename followed by record
+			filepath := fmt.Sprintf("records/%s", f.Name())
+			cont, _ := ioutil.ReadFile(filepath)
+			//strip out trailing '.' from FQDM
+			formName := f.Name()[:len(f.Name())-1]
+			fmt.Fprintf(w, "%-25s: %s", formName, cont)
+		}
+		fmt.Fprintf(w, "-------------------------------------------")
+		return
 
-	// if the domain is not FQ, FQ it
-	if string(dn[len(dn)-1]) != "." {
-		//println("not fully qualified")
-		dn = fmt.Sprintf("%s.", dn)
-	}
-	// filepath is 'records/fqdn'
-	path := fmt.Sprintf("records/%s", dn)
-
-	// write record
-	content := []byte(ip)
-	ioutil.WriteFile(path, content, 0644)
-}
-
-func rmEntry(rm string) {
-	// delete record
-	// try to remove it if it exist, otherwise it doesn't
-	// filepath is 'records/<rm>.', need to append a .
-	path := fmt.Sprintf("records/%s.", rm)
-
-	err := os.Remove(path)
-	if err != nil {
-		fmt.Println(err)
+	case "add":
+		dn, ip := commArr[1], commArr[2]
+		nsmanager.AddEntry(dn, ip)
+	case "rm":
+		rm := commArr[1]
+		nsmanager.RmEntry(rm)
+	case "modify":
+		dn, ip := commArr[1], commArr[2]
+		nsmanager.AddEntry(dn, ip)
+	default:
+		fmt.Fprintf(w, "not a valid command.")
 	}
 }
