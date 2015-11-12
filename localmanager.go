@@ -2,7 +2,6 @@ package main
 
 import (
 	"flag"
-	"gonsman"
 	"os"
 
 	"github.com/unixvoid/nsproxy/nsproxymanager.go"
