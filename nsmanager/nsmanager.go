@@ -23,7 +23,7 @@ import (
 // =============================================
 */
 
-func listEntries() {
+func ListEntries() {
 	// list records
 	println("-------------------------------------------")
 	files, _ := ioutil.ReadDir("records/")
@@ -39,7 +39,7 @@ func listEntries() {
 	return
 }
 
-func addEntry(dn, ip string) {
+func AddEntry(dn, ip string) {
 	// add record
 	// more useable when the newline is appened to the end
 	ip = fmt.Sprintf("%s\n", ip)
@@ -57,7 +57,7 @@ func addEntry(dn, ip string) {
 	ioutil.WriteFile(path, content, 0644)
 }
 
-func rmEntry(rm string) {
+func RmEntry(rm string) {
 	// delete record
 	// try to remove it if it exist, otherwise it doesn't
 	// filepath is 'records/<rm>.', need to append a .

@@ -40,25 +40,25 @@ func main() {
 	}
 
 	if *list {
-		nsmanager.listEntries()
+		nsmanager.ListEntries()
 	}
 
 	if *addReq != "" {
 		dn := *addReq
 		// the extra argument is the ip
 		ip := flag.Arg(0)
-		nsmanager.addEntry(dn, ip)
+		nsmanager.AddEntry(dn, ip)
 	}
 
 	if *modReq != "" {
 		dn := *modReq
 		// the extra argument is the ip
 		ip := flag.Arg(0)
-		nsmanager.addEntry(dn, ip)
+		nsmanager.AddEntry(dn, ip)
 	}
 
 	if *remReq != "" {
 		rm := *remReq
-		nsmanager.rmEntry(rm)
+		nsmanager.RmEntry(rm)
 	}
 }
