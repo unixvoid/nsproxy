@@ -4,7 +4,7 @@ import (
 	"flag"
 	"os"
 
-	"github.com/unixvoid/nsproxy/nsproxymanager.go"
+	"github.com/unixvoid/nsproxy/nsproxymanager/nsproxymanager.go"
 )
 
 /*
