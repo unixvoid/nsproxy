@@ -4,7 +4,7 @@ import (
 	"flag"
 	"os"
 
-	"github.com/unixvoid/nsproxy/nsproxymanager/nsproxymanager.go"
+	"github.com/unixvoid/nsproxy/nsmanager"
 )
 
 /*
@@ -40,25 +40,25 @@ func main() {
 	}
 
 	if *list {
-		nsproxymanager.listEntries()
+		nsmanager.listEntries()
 	}
 
 	if *addReq != "" {
 		dn := *addReq
 		// the extra argument is the ip
 		ip := flag.Arg(0)
-		nsproxymanager.addEntry(dn, ip)
+		nsmanager.addEntry(dn, ip)
 	}
 
 	if *modReq != "" {
 		dn := *modReq
 		// the extra argument is the ip
 		ip := flag.Arg(0)
-		nsproxymanager.addEntry(dn, ip)
+		nsmanager.addEntry(dn, ip)
 	}
 
 	if *remReq != "" {
 		rm := *remReq
-		nsproxymanager.rmEntry(rm)
+		nsmanager.rmEntry(rm)
 	}
 }
