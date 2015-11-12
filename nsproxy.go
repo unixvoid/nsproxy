@@ -7,6 +7,7 @@ import (
 	"log"
 	"net"
 	"os"
+	"os/exec"
 	"strings"
 
 	"github.com/miekg/dns"
@@ -51,8 +52,19 @@ var defaultServer string
 func main() {
 	defaultServerAsk := flag.String("upstream", "8.8.8.8:53", "upstream nameserver")
 	rawPort := flag.String("p", "53", "port to listen on")
+	chain := flag.Bool("chain", false, "chain with remote manager")
 	flag.Parse()
 	defaultServer = *defaultServerAsk
+
+	if *chain {
+		chainStart := exec.Command("./remotemanager")
+		err := chainStart.Start()
+		println("starting remotemanager on 8054")
+		if err != nil {
+			println(err)
+			println("remote manager would not start, continuing..")
+		}
+	}
 
 	//format the string to be :port
 	port := fmt.Sprint(":", *rawPort)

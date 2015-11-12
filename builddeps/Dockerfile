@@ -1,6 +1,7 @@
 FROM scratch
 
 ADD /rootfs.tar.gz /
-COPY /goNSproxy /goNSproxy
+COPY /nsproxy /nsproxy
+COPY /remotemanager /remotemanager
 
-CMD ["/goNSproxy"]
+CMD ["/nsproxy", "-chain"]

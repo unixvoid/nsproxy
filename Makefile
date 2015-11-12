@@ -2,21 +2,35 @@ GOC=go build
 GOFLAGS=-a -ldflags '-s'
 CGOR=CGO_ENABLED=0
 
-all: goNSproxy
+all: nsproxy
 
-goNSproxy: goNSproxy.go
-	$(GOC) goNSproxy.go
+nsproxy: nsproxy.go
+	$(GOC) nsproxy.go
 
-run: goNSproxy.go
-	go run goNSproxy.go
+run: nsproxy.go
+	go run nsproxy.go
 
-stat: goNSproxy.go
-	$(CGOR) $(GOC) $(GOFLAGS) goNSproxy.go
+stage: nsproxy.go
+	make stat
+	make statremote
+	mv nsproxy builddeps/
+	mv remotemanager builddeps/
+
+stat: nsproxy.go
+	$(CGOR) $(GOC) $(GOFLAGS) nsproxy.go
+
+statremote: remotemanager.go
+	$(CGOR) $(GOC) $(GOFLAGS) remotemanager.go
 
 install: stat
-	cp goNSproxy /usr/bin
+	cp nsproxy /usr/bin
 
 clean:
-	rm -f goNSproxy
+	rm -f nsproxy
+	rm -f remotemanager
+	rm -f localmanager
+	rm -f builddeps/nsproxy
+	rm -f builddeps/remotemanager
+	rm -f builddeps/localmanager
 
-#CGO_ENABLED=0 go build -a -ldflags '-s' goNSproxy.go
+#CGO_ENABLED=0 go build -a -ldflags '-s' nsproxy.go
