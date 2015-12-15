@@ -15,7 +15,8 @@ import (
 
 /*
 // =============================================================
-// just a few tips when starting the server
+// just a few tips when starting the server on a workstation
+// that is not designed to run a DNS server on port 53.
 // the linux network manager generally wont let you
 // start the server on 53 when dnsmasq is already running.
 // to demo the functionality of the server properly we need
@@ -35,8 +36,8 @@ import (
 /*
 // =============================================================
 // general strategy:
-// This is super simple since we do not have
-// A ton of entries. We should have a directory in the same path
+// This is very simple as we are not dealing with
+// a ton of entries. We should have a directory in the same path
 // that the DNS server runs and inside that directory is a set of
 // files that are formatted as follows:
 //
