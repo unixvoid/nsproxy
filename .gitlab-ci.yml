@@ -1,0 +1,13 @@
+before_script:
+        - apk update && apk add git go make
+        - GOPATH="/devel/"; export GOPATH
+        - PATH="$PATH:$GOPATH/bin"; export PATH
+        - go get github.com/miekg/dns
+
+gospec:
+        script:
+                - make stat
+
+clean:
+        script:
+                - make clean
