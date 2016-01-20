@@ -18,6 +18,7 @@ nsproxy to update and add entries during runtime.
 - **nsproxy**  
   nsproxy will take these arguments if you wish to specify:  
   `-p` this is the port the nsproxy listens on, default is 53  
+  `-debug` this will start nsproxy with debug logs
   `-upstream` this is the upstream DNS, default is 8.8.8.8:53  
   `-chain` This will run the remote manager along with the nsproxy
   this starts the remote manager on port 8054.  
