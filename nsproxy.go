@@ -3,6 +3,7 @@ package main
 import (
 	"flag"
 	"fmt"
+	"io"
 	"io/ioutil"
 	"log"
 	"net"
@@ -48,22 +49,36 @@ import (
 // any new content into the response RR.
 // =============================================================
 */
-var defaultServer string
+var (
+	defaultServer string
+	Info          *log.Logger
+	Debug         *log.Logger
+	Error         *log.Logger
+)
 
 func main() {
 	defaultServerAsk := flag.String("upstream", "8.8.8.8:53", "upstream nameserver")
 	rawPort := flag.String("p", "53", "port to listen on")
+	logLevel := flag.Bool("debug", false, "show debug logs")
 	chain := flag.Bool("chain", false, "chain with remote manager")
 	flag.Parse()
+
+	// initiate our logger funtion
+	if *logLevel {
+		logInit(os.Stdout, os.Stdout, os.Stderr)
+	} else {
+		logInit(os.Stdout, ioutil.Discard, os.Stderr)
+	}
+
 	defaultServer = *defaultServerAsk
 
 	if *chain {
 		chainStart := exec.Command("./remotemanager")
 		err := chainStart.Start()
-		println("starting remotemanager on 8054")
+		Info.Println("starting remotemanager on 8054")
 		if err != nil {
-			println(err)
-			println("remote manager would not start, continuing..")
+			Error.Println(err)
+			Error.Println("remote manager would not start, continuing..")
 		}
 	}
 
@@ -72,7 +87,7 @@ func main() {
 
 	udpServer := &dns.Server{Addr: port, Net: "udp"}
 	tcpServer := &dns.Server{Addr: port, Net: "tcp"}
-	println("started server on", *rawPort)
+	Info.Println("started server on", *rawPort)
 	// miekg/dns forces use to have a function for the handler, I'll submit a pr so he fixes it
 	dns.HandleFunc(".", route)
 
@@ -122,12 +137,26 @@ func proxy(addr string, w dns.ResponseWriter, req *dns.Msg) {
 		rep.SetReply(req)
 		rep.Answer = append(rep.Answer, rr)
 
-		println("serving", hostname, "from local record")
+		Debug.Println("serving", hostname, "from local record")
 		w.WriteMsg(rep)
 		return
 
 	}
 
-	println("serving", hostname, "from", defaultServer)
+	Debug.Println("serving", hostname, "from", defaultServer)
 	w.WriteMsg(resp)
+}
+
+func logInit(infoHandle io.Writer, debugHandle io.Writer, errorHandle io.Writer) {
+	Info = log.New(infoHandle,
+		"INFO: ",
+		log.Ldate|log.Ltime|log.Lshortfile)
+
+	Debug = log.New(debugHandle,
+		"DEBUG: ",
+		log.Ldate|log.Ltime|log.Lshortfile)
+
+	Error = log.New(errorHandle,
+		"ERROR: ",
+		log.Ldate|log.Ltime|log.Lshortfile)
 }
