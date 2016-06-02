@@ -28,3 +28,17 @@ redis data model
     - content: alias
   - dns:url:unixvoid.com.
     - content: redirect url
+
+type reference
+--------------
+these are the typecodes for various lookup types in miekg/dns
+https://en.wikipedia.org/wiki/List_of_DNS_record_types
+https://github.com/miekg/dns/blob/master/types.go#L27
+
+none	0
+A		1
+AAAA	28
+CNAME	5
+TXT		16
+CAA		257
+DHCID	49

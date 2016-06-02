@@ -2,6 +2,9 @@
 	port			= 8053
 	loglevel		= "debug"
 
+[dns]
+	ttl				= 60
+
 [upstreamdns]
 	server			= "8.8.8.8:53"
 	port			= 53
