@@ -1,0 +1,11 @@
+[server]
+	port			= 8053
+	loglevel		= "debug"
+
+[upstreamdns]
+	server			= "8.8.8.8:53"
+	port			= 53
+
+[redis]
+	host			= "localhost:6379"
+	password		= ""

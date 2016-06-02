@@ -25,6 +25,10 @@ statremote: remotemanager.go
 install: stat
 	cp nsproxy /usr/bin
 
+link:
+	mkdir -p $(GOPATH)/src/git.unixvoid.com/mfaltys/
+	ln -s $(shell pwd) $(GOPATH)/src/git.unixvoid.com/mfaltys/
+
 clean:
 	rm -f nsproxy
 	rm -f remotemanager
