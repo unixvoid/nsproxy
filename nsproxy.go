@@ -54,11 +54,6 @@ func main() {
 		glogger.LogInit(ioutil.Discard, ioutil.Discard, os.Stderr)
 	}
 
-	_, err = os.Stat("records/")
-	if err != nil {
-		os.Mkdir("records/", 0755)
-	}
-
 	//format the string to be :port
 	port := fmt.Sprint(":", config.Server.Port)
 
@@ -110,11 +105,7 @@ func proxy(addr string, w dns.ResponseWriter, req *dns.Msg, redisClient *redis.C
 		return
 	}
 
-	// we should be able to repack a custom answer if the fully qualified hostname
-	// is found in our storage.
-	//
-	// if a record is found we parse the ipv4 address and build a new 'Answer' RR
-	//var dnsType uint16
+	// call main builder to craft and send the response
 	mainBuilder(w, req, resp, hostname, redisClient)
 }
 
