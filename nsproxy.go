@@ -10,6 +10,7 @@ import (
 	"net/http"
 	"os"
 	"strings"
+	"time"
 
 	"git.unixvoid.com/mfaltys/glogger"
 	"git.unixvoid.com/mfaltys/nsproxy/nsmanager"
@@ -23,7 +24,9 @@ type Config struct {
 		Loglevel string
 	}
 	Clustermanager struct {
-		Port int
+		Port       int
+		HostTTL    time.Duration
+		ClusterTTL time.Duration
 	}
 	Dns struct {
 		Ttl uint32
@@ -195,7 +198,7 @@ func asyncClusterListener() {
 }
 
 func clusterHandler(w http.ResponseWriter, r *http.Request, redisClient *redis.Client) {
-	// curl -d hostname=testName http://localhost:8080
+	// curl -d hostname=testname -d cluster=testcluster http://localhost:8080
 	ip := strings.Split(r.RemoteAddr, ":")[0]
 
 	r.ParseForm()
@@ -215,6 +218,7 @@ func clusterHandler(w http.ResponseWriter, r *http.Request, redisClient *redis.C
 	// all add to its own tag.. cluster:<cluster_name>:<hostname>
 	clusterStr := fmt.Sprintf("%s:%s:%s", "cluster", cluster, hostname)
 	redisClient.Set(clusterStr, ip, 0).Err()
+	redisClient.Expire(clusterStr, (config.Clustermanager.HostTTL * time.Minute)).Err()
 
 	// if it doesn't already exist in the index, add it
 	indexStr := fmt.Sprintf("%s:%s:%s", "index", "cluster", cluster)
@@ -224,6 +228,11 @@ func clusterHandler(w http.ResponseWriter, r *http.Request, redisClient *redis.C
 	if err != nil {
 		// index does not exist, create it..
 		redisClient.Set(indexStr, " ", 0).Err()
+		redisClient.Expire(indexStr, (config.Clustermanager.ClusterTTL * time.Minute)).Err()
+		// TODO:
+		// if we are making a new index, we now have a new cluster..
+		// we need to spawn a cluster listener to ping the host until the
+		// host dies.. like a load balancer
 	}
 	if strings.Contains(index, searchHostname) {
 		// we now append the server hostname to cluster index.. index:cluster:<cluster_name>
