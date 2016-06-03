@@ -239,6 +239,7 @@ func clusterHandler(w http.ResponseWriter, r *http.Request, redisClient *redis.C
 		glogger.Debug.Println("host already exists in cluster index")
 	} else {
 		redisClient.Append(indexStr, paddedHostname)
+		redisClient.Expire(indexStr, (config.Clustermanager.ClusterTTL * time.Minute)).Err()
 	}
 
 	// return msg to client
