@@ -5,7 +5,7 @@
 [clustermanager]
 	port			= 8080
 	hostTTL			= 2
-	clusterTTL		= 5
+	clusterTTL		= 3
 
 [dns]
 	ttl				= 60

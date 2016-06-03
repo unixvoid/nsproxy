@@ -233,6 +233,8 @@ func clusterHandler(w http.ResponseWriter, r *http.Request, redisClient *redis.C
 		// if we are making a new index, we now have a new cluster..
 		// we need to spawn a cluster listener to ping the host until the
 		// host dies.. like a load balancer
+		glogger.Debug.Printf("--- spawning async cluster manager for %s:%s ---", cluster, hostname)
+		go spawnClusterManager(cluster, hostname, ip, redisClient)
 	}
 	if strings.Contains(index, searchHostname) {
 		// we now append the server hostname to cluster index.. index:cluster:<cluster_name>
@@ -244,4 +246,30 @@ func clusterHandler(w http.ResponseWriter, r *http.Request, redisClient *redis.C
 
 	// return msg to client
 	w.Header().Set("x-register", "registered")
+}
+
+func spawnClusterManager(cluster, hostname, ip string, redisClient *redis.Client) {
+	online := true
+	for online {
+		if nsmanager.PingHost(ip) {
+			glogger.Debug.Printf("- %s:%s online", cluster, hostname)
+		} else {
+			glogger.Debug.Printf("- %s:%s offline", cluster, hostname)
+			online = false
+			break
+		}
+		time.Sleep(time.Second * time.Duration(5))
+	}
+	glogger.Debug.Printf("--- closing %s:%s listener ---", cluster, hostname)
+	// remove the server entry, it is no longer online
+	redisEntry := fmt.Sprintf("%s:%s:%s", "cluster", cluster, hostname)
+	redisClient.Del(redisEntry)
+
+	// remove the index entry, it is no longer in the cluster
+	queryString := fmt.Sprintf("index:cluster:%s", cluster)
+	tmpIndex, _ := redisClient.Get(queryString).Result()
+	paddedHostname := fmt.Sprintf(" %s ", hostname)
+	// find and replace
+	newIndex := strings.Replace(tmpIndex, paddedHostname, " ", -1)
+	redisClient.Set(queryString, newIndex, 0)
 }
