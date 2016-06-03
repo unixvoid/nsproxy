@@ -2,10 +2,12 @@ package main
 
 import (
 	"fmt"
+	"github.com/gorilla/mux"
 	"gopkg.in/gcfg.v1"
 	"io/ioutil"
 	"log"
 	"net"
+	"net/http"
 	"os"
 	"strings"
 
@@ -19,6 +21,9 @@ type Config struct {
 	Server struct {
 		Port     int
 		Loglevel string
+	}
+	Clustermanager struct {
+		Port int
 	}
 	Dns struct {
 		Ttl uint32
@@ -54,7 +59,10 @@ func main() {
 		glogger.LogInit(ioutil.Discard, ioutil.Discard, os.Stderr)
 	}
 
-	//format the string to be :port
+	// start async cluster listener
+	go asyncClusterListener()
+
+	// format the string to be :port
 	port := fmt.Sprint(":", config.Server.Port)
 
 	udpServer := &dns.Server{Addr: port, Net: "udp"}
@@ -81,16 +89,6 @@ func route(w dns.ResponseWriter, req *dns.Msg) {
 
 func proxy(addr string, w dns.ResponseWriter, req *dns.Msg, redisClient *redis.Client) {
 	hostname := req.Question[0].Name
-	//glogger.Debug.Println("---------------------------------------------------------")
-	glogger.Debug.Printf("ID :: %v", req.MsgHdr.Id)
-	//glogger.Debug.Printf("NS :: %v", req.Ns)
-	//glogger.Debug.Printf("Header :: %v", req.MsgHdr)
-	//glogger.Debug.Printf("Compress :: %v", req.Compress)
-	glogger.Debug.Printf("Question :: %v", req.Question[0].Qtype)
-	//glogger.Debug.Printf("Answer :: %v", req.Answer)
-	//glogger.Debug.Printf("Extra :: %v", req.Extra)
-	//glogger.Debug.Println("---------------------------------------------------------")
-	//glogger.Debug.Printf("Req :: %v", req)
 
 	transport := "udp"
 	if _, ok := w.RemoteAddr().(*net.TCPAddr); ok {
@@ -174,4 +172,66 @@ func cnameBuilder(hostname, lookup string) *dns.CNAME {
 	rr.Hdr = dns.RR_Header{Name: hostname, Rrtype: dns.TypeCNAME, Class: dns.ClassINET, Ttl: config.Dns.Ttl}
 	rr.Target = lookup
 	return rr
+}
+
+func asyncClusterListener() {
+	// async listener gets its own redis connection
+	redisClient := redis.NewClient(&redis.Options{
+		Addr:     config.Redis.Host,
+		Password: config.Redis.Password,
+		DB:       0,
+	})
+
+	// format the string to be :port
+	port := fmt.Sprint(":", config.Clustermanager.Port)
+
+	glogger.Info.Println("started async cluster listener on port", config.Clustermanager.Port)
+	router := mux.NewRouter()
+	router.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
+		clusterHandler(w, r, redisClient)
+	})
+
+	log.Fatal(http.ListenAndServe(port, router))
+}
+
+func clusterHandler(w http.ResponseWriter, r *http.Request, redisClient *redis.Client) {
+	// curl -d hostname=testName http://localhost:8080
+	ip := strings.Split(r.RemoteAddr, ":")[0]
+
+	r.ParseForm()
+	hostname := strings.TrimSpace(r.FormValue("hostname"))
+	cluster := strings.TrimSpace(r.FormValue("cluster"))
+	// make sure hostname and cluster are set
+	if len(hostname) == 0 {
+		glogger.Debug.Println("hostname not set, using 'defaulthost'")
+		hostname = "defaulthost"
+	}
+	if len(cluster) == 0 {
+		glogger.Debug.Println("cluster not set, using 'defaultcluster'")
+		cluster = "defaultcluster"
+	}
+	glogger.Debug.Printf("registered %s:%s :: %s", cluster, hostname, ip)
+
+	// all add to its own tag.. cluster:<cluster_name>:<hostname>
+	clusterStr := fmt.Sprintf("%s:%s:%s", "cluster", cluster, hostname)
+	redisClient.Set(clusterStr, ip, 0).Err()
+
+	// if it doesn't already exist in the index, add it
+	indexStr := fmt.Sprintf("%s:%s:%s", "index", "cluster", cluster)
+	searchHostname := fmt.Sprintf(" %s ", hostname)
+	paddedHostname := fmt.Sprintf("%s ", hostname)
+	index, err := redisClient.Get(indexStr).Result()
+	if err != nil {
+		// index does not exist, create it..
+		redisClient.Set(indexStr, " ", 0).Err()
+	}
+	if strings.Contains(index, searchHostname) {
+		// we now append the server hostname to cluster index.. index:cluster:<cluster_name>
+		glogger.Debug.Println("host already exists in cluster index")
+	} else {
+		redisClient.Append(indexStr, paddedHostname)
+	}
+
+	// return msg to client
+	w.Header().Set("x-register", "registered")
 }

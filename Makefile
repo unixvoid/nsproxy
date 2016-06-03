@@ -29,6 +29,18 @@ link:
 	mkdir -p $(GOPATH)/src/git.unixvoid.com/mfaltys/
 	ln -s $(shell pwd) $(GOPATH)/src/git.unixvoid.com/mfaltys/
 
+test:
+	@echo "----------------------------------------------------------------------"
+	dig +noall +question +answer @localhost -p 8053 unixvoid.com.
+	@echo "----------------------------------------------------------------------"
+	dig +noall +question +answer @localhost -p 8053 unixvoid.com. A
+	@echo "----------------------------------------------------------------------"
+	dig +noall +question +answer @localhost -p 8053 unixvoid.com. AAAA
+	@echo "----------------------------------------------------------------------"
+	dig +noall +question +answer @localhost -p 8053 unixvoid.com. CNAME
+	@echo "----------------------------------------------------------------------"
+	@echo "testing complete"
+
 clean:
 	rm -f nsproxy
 	rm -f remotemanager

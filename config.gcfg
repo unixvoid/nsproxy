@@ -2,6 +2,9 @@
 	port			= 8053
 	loglevel		= "debug"
 
+[clustermanager]
+	port			= 8080
+
 [dns]
 	ttl				= 60
 

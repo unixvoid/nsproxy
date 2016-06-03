@@ -43,3 +43,16 @@ CNAME	5
 TXT		16
 CAA		257
 DHCID	49
+
+debug
+-----
+glogger.Debug.Println("---------------------------------------------------------")
+glogger.Debug.Printf("ID :: %v", req.MsgHdr.Id)
+glogger.Debug.Printf("NS :: %v", req.Ns)
+glogger.Debug.Printf("Header :: %v", req.MsgHdr)
+glogger.Debug.Printf("Compress :: %v", req.Compress)
+glogger.Debug.Printf("Question :: %v", req.Question[0].Qtype)
+glogger.Debug.Printf("Answer :: %v", req.Answer)
+glogger.Debug.Printf("Extra :: %v", req.Extra)
+glogger.Debug.Println("---------------------------------------------------------")
+glogger.Debug.Printf("Req :: %v", req)
