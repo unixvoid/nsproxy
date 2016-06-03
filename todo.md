@@ -8,6 +8,7 @@ TODO
   to nsproxy which will register it in the system.  
   - now when a dns request comes through nsproxy will check a local redis
   cache to resolve the proper IP based on a specified algorithm
+  - impliment redis handler that throws exception when no redis connection
 
 
 - add async server handler (will collect ips/register servers)
