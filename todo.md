@@ -61,6 +61,7 @@ glogger.Debug.Printf("Req :: %v", req)
 
 flow
 ----
+```
 - when a host comes on line, it gets a cluster entry: 
   - redis key: cluster:<cluster_name>:<host_name>
   - content:<ip>
@@ -85,3 +86,4 @@ flow
   - if nsproxy dies mid process it it the job (next boot) to check all entries in 'index:master'
     to see if live host still exist (are live) if not, it will clean out their respective entries in
     'index:<cluster_name>:<host_name>' and 'cluster:<cluster_name>:<host_name>'
+```
