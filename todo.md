@@ -40,11 +40,11 @@ https://github.com/miekg/dns/blob/master/types.go#L27
 
 ```
 none	0
-A		1
+A	1
 AAAA	28
 CNAME	5
-TXT		16
-CAA		257
+TXT	16
+CAA	257
 DHCID	49
 ```
 
