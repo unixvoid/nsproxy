@@ -1,6 +1,6 @@
 [server]
 	port			= 8053
-	loglevel		= "cluster"
+	loglevel		= "debug"
 
 [clustermanager]
 	port			= 8080
