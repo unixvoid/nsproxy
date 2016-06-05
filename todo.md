@@ -34,10 +34,11 @@ redis data model
 
 type reference
 --------------
-these are the typecodes for various lookup types in miekg/dns
-https://en.wikipedia.org/wiki/List_of_DNS_record_types
-https://github.com/miekg/dns/blob/master/types.go#L27
+these are the typecodes for various lookup types in miekg/dns  
+https://en.wikipedia.org/wiki/List_of_DNS_record_types  
+https://github.com/miekg/dns/blob/master/types.go#L27  
 
+```
 none	0
 A		1
 AAAA	28
@@ -45,9 +46,11 @@ CNAME	5
 TXT		16
 CAA		257
 DHCID	49
+```
 
-debug
------
+debug reference
+---------------
+```
 glogger.Debug.Println("---------------------------------------------------------")
 glogger.Debug.Printf("ID :: %v", req.MsgHdr.Id)
 glogger.Debug.Printf("NS :: %v", req.Ns)
@@ -58,6 +61,7 @@ glogger.Debug.Printf("Answer :: %v", req.Answer)
 glogger.Debug.Printf("Extra :: %v", req.Extra)
 glogger.Debug.Println("---------------------------------------------------------")
 glogger.Debug.Printf("Req :: %v", req)
+```
 
 flow
 ----
