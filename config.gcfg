@@ -1,11 +1,12 @@
 [server]
 	port			= 8053
-	loglevel		= "debug"
+	loglevel		= "cluster"
 
 [clustermanager]
 	port			= 8080
 	hostTTL			= 2
 	clusterTTL		= 3
+	pingFreq		= 4
 
 [dns]
 	ttl				= 60
