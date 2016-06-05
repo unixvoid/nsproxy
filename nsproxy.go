@@ -223,6 +223,7 @@ func clusterHandler(w http.ResponseWriter, r *http.Request, redisClient *redis.C
 		redisClient.SAdd(fmt.Sprintf("index:cluster:%s", cluster), hostname)
 		redisClient.SAdd("index:master", fmt.Sprintf("%s:%s", cluster, hostname))
 		// TODO remove this line, launch the clusterDiff() func instead
+		clusterDiff(redisClient)
 		redisClient.SAdd("index:live", fmt.Sprintf("%s:%s", cluster, hostname))
 
 		// return confirmation header to client
@@ -255,10 +256,21 @@ func spawnClusterManager(cluster, hostname, ip string, redisClient *redis.Client
 }
 
 // TODO add cluster manager to diff 'index:master' and 'index:live'
-func clusterDiff() {
+func clusterDiff(redisClient *redis.Client) {
 	// 'sdiff index:master index:live' will return the set of hosts
 	// that do not have listeners currently attached
-
+	diffString := redisClient.SDiff("index:master", "index:live")
+	glogger.Debug.Println("----------------------")
+	//glogger.Debug.Println(diffString.Result())
+	tmp, _ := diffString.Result()
+	//glogger.Debug.Println(tmp)
+	//glogger.Debug.Println(len(tmp))
+	//glogger.Debug.Println(tmp[0])
+	for _, b := range tmp {
+		glogger.Debug.Println(b)
+	}
+	//glogger.Debug.Println(len(diffString.String()))
+	glogger.Debug.Println("----------------------")
 }
 
 // TODO add startup manager to veryify integrity of live hosts in 'index:master'
