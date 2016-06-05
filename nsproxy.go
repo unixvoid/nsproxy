@@ -96,22 +96,33 @@ func route(w dns.ResponseWriter, req *dns.Msg) {
 func proxy(addr string, w dns.ResponseWriter, req *dns.Msg, redisClient *redis.Client) {
 	hostname := req.Question[0].Name
 	if strings.Contains(hostname, "cluster:") {
+		// 'cluster:fedora'
 		// it is a cluster entry, forward the request to the dns cluster handler
-		// cluster:coreos
-		//indexString := redisClient.SInter(fmt.Sprintf("index:%s", hostname))
-		// CURRENT i just made syncLists()
-		indexString, _ := redisClient.SInter("index:cluster:coreos").Result()
-		glogger.Cluster.Println(indexString[(len(indexString) - 1)])
-		// remove and add back to the end of set
-		redisClient.SRem("index:cluster:coreos", indexString[(len(indexString)-1)])
-		redisClient.SAdd("index:cluster:coreos", indexString[(len(indexString)-1)])
+		// remove the FQDM '.' from end of 'hostname'
+		fqdnHostname := hostname
+		hostname := strings.Replace(hostname, ".", "", -1)
 
-		indexString, _ = redisClient.SInter("index:cluster:coreos").Result()
-		glogger.Cluster.Println(indexString[len(indexString)-1])
+		// grab the first item in the list
+		firstEntry, _ := redisClient.LIndex(fmt.Sprintf("list:%s", hostname), 0).Result()
 
-		//redisClient.SRem("index:live", fmt.Sprintf("%s:%s", cluster, hostname))
-		//redisClient.SAdd("index:live", fmt.Sprintf("%s:%s", cluster, hostname))
-		//ip, _ := redisClient.Get(fmt.Sprintf("cluster:%s:%s", cluster, hostname)).Result()
+		// cluster ip is found at <hostname>:<firstEntry> (resolves to cluster:fedora:test1)
+		//ip, _ := redisClient.Get(fmt.Sprintf("%s:%s", hostname, firstEntry)).Result()
+		//glogger.Cluster.Println(ip)
+		// return ip to client
+		lookup, _ := nsmanager.ClusterQuery(hostname, firstEntry, redisClient)
+		println(lookup)
+		//customRR := aBuilder(hostname, lookup)
+		customRR := aBuilder(fqdnHostname, lookup)
+		rep := new(dns.Msg)
+		rep.SetReply(req)
+		rep.Answer = append(rep.Answer, customRR)
+
+		glogger.Cluster.Println("serving", hostname, "from local record")
+		w.WriteMsg(rep)
+
+		// pop the list and add the entry to the end, it just got lb'd
+		firstEntry, _ = redisClient.LPop(fmt.Sprintf("list:%s", hostname)).Result()
+		redisClient.RPush(fmt.Sprintf("list:%s", hostname), firstEntry)
 	} else {
 
 		transport := "udp"
@@ -240,6 +251,7 @@ func clusterHandler(w http.ResponseWriter, r *http.Request, redisClient *redis.C
 
 		// add to index if it does not exist index:cluster:<cluster_name> <host_name>
 		redisClient.SAdd(fmt.Sprintf("index:cluster:%s", cluster), hostname)
+		syncList(cluster, redisClient)
 		redisClient.SAdd("index:master", fmt.Sprintf("%s:%s", cluster, hostname))
 
 		// diff index:master and index:live to find/register the new live host
@@ -270,6 +282,7 @@ func spawnClusterManager(cluster, hostname, ip string, redisClient *redis.Client
 
 	// remove the index entry, it is no longer in the cluster
 	redisClient.SRem(fmt.Sprintf("index:cluster:%s", cluster), hostname)
+	syncList(cluster, redisClient)
 
 	redisClient.SRem("index:master", fmt.Sprintf("%s:%s", cluster, hostname))
 	redisClient.SRem("index:live", fmt.Sprintf("%s:%s", cluster, hostname))
@@ -300,9 +313,12 @@ func clusterDiff(redisClient *redis.Client) {
 func syncList(cluster string, redisClient *redis.Client) {
 	glogger.Cluster.Println("syncing list")
 	indexString, _ := redisClient.SInter(fmt.Sprintf("index:cluster:%s", cluster)).Result()
+	// populate a tmp list
 	for _, i := range indexString {
 		redisClient.RPush(fmt.Sprintf("tmp:list:cluster:%s", cluster), i)
 	}
+	// delete current list
 	redisClient.Del(fmt.Sprintf("list:cluster:%s", cluster))
+	// move tmp list to current
 	redisClient.Rename(fmt.Sprintf("tmp:list:cluster:%s", cluster), fmt.Sprintf("list:cluster:%s", cluster))
 }

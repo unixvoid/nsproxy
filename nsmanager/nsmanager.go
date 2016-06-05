@@ -21,6 +21,17 @@ func Query(queryType, recordType, queryAttribute string, redisClient *redis.Clie
 	return "", nil
 }
 
+func ClusterQuery(queryType, queryAttribute string, redisClient *redis.Client) (string, error) {
+	searchString := fmt.Sprintf("%s:%s", queryType, queryAttribute)
+	val, err := redisClient.Get(searchString).Result()
+	if err != nil {
+		return "", errors.New("string not found.")
+	} else {
+		return val, nil
+	}
+	return "", nil
+}
+
 func PingHost(hostIp string) bool {
 	var online bool
 	p := fastping.NewPinger()
