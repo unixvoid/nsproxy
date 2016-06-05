@@ -95,22 +95,41 @@ func route(w dns.ResponseWriter, req *dns.Msg) {
 
 func proxy(addr string, w dns.ResponseWriter, req *dns.Msg, redisClient *redis.Client) {
 	hostname := req.Question[0].Name
+	if strings.Contains(hostname, "cluster:") {
+		// it is a cluster entry, forward the request to the dns cluster handler
+		// cluster:coreos
+		//indexString := redisClient.SInter(fmt.Sprintf("index:%s", hostname))
+		// CURRENT i just made syncLists()
+		indexString, _ := redisClient.SInter("index:cluster:coreos").Result()
+		glogger.Cluster.Println(indexString[(len(indexString) - 1)])
+		// remove and add back to the end of set
+		redisClient.SRem("index:cluster:coreos", indexString[(len(indexString)-1)])
+		redisClient.SAdd("index:cluster:coreos", indexString[(len(indexString)-1)])
 
-	transport := "udp"
-	if _, ok := w.RemoteAddr().(*net.TCPAddr); ok {
-		transport = "tcp"
+		indexString, _ = redisClient.SInter("index:cluster:coreos").Result()
+		glogger.Cluster.Println(indexString[len(indexString)-1])
+
+		//redisClient.SRem("index:live", fmt.Sprintf("%s:%s", cluster, hostname))
+		//redisClient.SAdd("index:live", fmt.Sprintf("%s:%s", cluster, hostname))
+		//ip, _ := redisClient.Get(fmt.Sprintf("cluster:%s:%s", cluster, hostname)).Result()
+	} else {
+
+		transport := "udp"
+		if _, ok := w.RemoteAddr().(*net.TCPAddr); ok {
+			transport = "tcp"
+		}
+		c := &dns.Client{Net: transport}
+		resp, _, err := c.Exchange(req, addr)
+
+		if err != nil {
+			glogger.Error.Println(err)
+			dns.HandleFailed(w, req)
+			return
+		}
+
+		// call main builder to craft and send the response
+		mainBuilder(w, req, resp, hostname, redisClient)
 	}
-	c := &dns.Client{Net: transport}
-	resp, _, err := c.Exchange(req, addr)
-
-	if err != nil {
-		glogger.Error.Println(err)
-		dns.HandleFailed(w, req)
-		return
-	}
-
-	// call main builder to craft and send the response
-	mainBuilder(w, req, resp, hostname, redisClient)
 }
 
 func mainBuilder(w dns.ResponseWriter, req, resp *dns.Msg, hostname string, redisClient *redis.Client) {
@@ -273,4 +292,17 @@ func clusterDiff(redisClient *redis.Client) {
 		// add host to live entry now
 		redisClient.SAdd("index:live", fmt.Sprintf("%s:%s", cluster, hostname))
 	}
+}
+
+// TODO add sync function to sync 'index:cluster:<cluster_name>' and 'list:cluster:<cluster_name>'
+// we use the list to load balance (aka order matters)
+// this will get synced every time a element is added or subtracted from the index
+func syncList(cluster string, redisClient *redis.Client) {
+	glogger.Cluster.Println("syncing list")
+	indexString, _ := redisClient.SInter(fmt.Sprintf("index:cluster:%s", cluster)).Result()
+	for _, i := range indexString {
+		redisClient.RPush(fmt.Sprintf("tmp:list:cluster:%s", cluster), i)
+	}
+	redisClient.Del(fmt.Sprintf("list:cluster:%s", cluster))
+	redisClient.Rename(fmt.Sprintf("tmp:list:cluster:%s", cluster), fmt.Sprintf("list:cluster:%s", cluster))
 }
