@@ -187,6 +187,8 @@ func asyncClusterListener() {
 		Password: config.Redis.Password,
 		DB:       0,
 	})
+	// first boot, remove live file
+	redisClient.Del(fmt.Sprintf("index:live"))
 
 	// format the string to be :port
 	port := fmt.Sprint(":", config.Clustermanager.Port)
@@ -197,6 +199,7 @@ func asyncClusterListener() {
 		clusterHandler(w, r, redisClient)
 	})
 
+	clusterDiff(redisClient)
 	log.Fatal(http.ListenAndServe(port, router))
 }
 
@@ -215,16 +218,13 @@ func clusterHandler(w http.ResponseWriter, r *http.Request, redisClient *redis.C
 
 		// add cluster entry cluster:<cluster_name>:<hostname> <ip>
 		redisClient.Set(fmt.Sprintf("cluster:%s:%s", cluster, hostname), ip, 0).Err()
-		//redisClient.Expire(clusterStr, (config.Clustermanager.HostTTL * time.Minute)).Err()
-		glogger.Cluster.Printf("--- spawning async cluster manager for %s:%s ---", cluster, hostname)
-		go spawnClusterManager(cluster, hostname, ip, redisClient)
 
 		// add to index if it does not exist index:cluster:<cluster_name> <host_name>
 		redisClient.SAdd(fmt.Sprintf("index:cluster:%s", cluster), hostname)
 		redisClient.SAdd("index:master", fmt.Sprintf("%s:%s", cluster, hostname))
-		// TODO remove this line, launch the clusterDiff() func instead
+
+		// diff index:master and index:live to find/register the new live host
 		clusterDiff(redisClient)
-		redisClient.SAdd("index:live", fmt.Sprintf("%s:%s", cluster, hostname))
 
 		// return confirmation header to client
 		w.Header().Set("x-register", "registered")
@@ -232,6 +232,7 @@ func clusterHandler(w http.ResponseWriter, r *http.Request, redisClient *redis.C
 }
 
 func spawnClusterManager(cluster, hostname, ip string, redisClient *redis.Client) {
+	glogger.Cluster.Printf("spawning async cluster manager for %s:%s", cluster, hostname)
 	online := true
 	for online {
 		if nsmanager.PingHost(ip) {
@@ -244,7 +245,7 @@ func spawnClusterManager(cluster, hostname, ip string, redisClient *redis.Client
 		// time between host pings
 		time.Sleep(time.Second * config.Clustermanager.PingFreq)
 	}
-	glogger.Cluster.Printf("--- closing %s:%s listener ---", cluster, hostname)
+	glogger.Cluster.Printf("closing %s:%s listener", cluster, hostname)
 	// remove the server entry, it is no longer online
 	redisClient.Del(fmt.Sprintf("cluster:%s:%s", cluster, hostname))
 
@@ -255,24 +256,21 @@ func spawnClusterManager(cluster, hostname, ip string, redisClient *redis.Client
 	redisClient.SRem("index:live", fmt.Sprintf("%s:%s", cluster, hostname))
 }
 
-// TODO add cluster manager to diff 'index:master' and 'index:live'
 func clusterDiff(redisClient *redis.Client) {
 	// 'sdiff index:master index:live' will return the set of hosts
 	// that do not have listeners currently attached
+	glogger.Cluster.Println("diffing cluster")
 	diffString := redisClient.SDiff("index:master", "index:live")
-	glogger.Debug.Println("----------------------")
-	//glogger.Debug.Println(diffString.Result())
 	tmp, _ := diffString.Result()
-	//glogger.Debug.Println(tmp)
-	//glogger.Debug.Println(len(tmp))
-	//glogger.Debug.Println(tmp[0])
+	// for ever entry that is not in index:live
 	for _, b := range tmp {
-		glogger.Debug.Println(b)
+		glogger.Debug.Println("found diff for:", b)
+		s := strings.SplitN(b, ":", 2)
+		cluster, hostname := s[0], s[1]
+		ip, _ := redisClient.Get(fmt.Sprintf("cluster:%s:%s", cluster, hostname)).Result()
+		// spawn cluster manager for host
+		go spawnClusterManager(cluster, hostname, ip, redisClient)
+		// add host to live entry now
+		redisClient.SAdd("index:live", fmt.Sprintf("%s:%s", cluster, hostname))
 	}
-	//glogger.Debug.Println(len(diffString.String()))
-	glogger.Debug.Println("----------------------")
-}
-
-// TODO add startup manager to veryify integrity of live hosts in 'index:master'
-func verifyHosts() {
 }
