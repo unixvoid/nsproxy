@@ -26,7 +26,7 @@ entries.
     password:  password to the redis database if one exists
   ```
 
-- **nsproxy usage**
+- **nsproxy usage**  
   The following usage implies the default config file is being used.
   On boot nsproxy will bind to two ports:
   - `8053` is used as the regular dns server.  This will act the same as any other dns server and allows for custom dns entries to be used.
