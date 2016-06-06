@@ -65,3 +65,34 @@ entries.
      container
    - `make install` will install the compiled nsproxy in /usr/bin/
    - `make clean` will clean the project of all tmp directories and binaries
+
+- **redis**
+  This is designed to help the user understand what is going on inside of redis
+  at a low level.  The following are redis keys (with examples) and what they
+  store.
+  - `cluster:<cluster_name>:<host_name>` This is a low level entry that has a
+    hostname's ip
+    - type: redis key
+    - content: host ip
+    - example `cluster:coreos:nginx` 192.168.2.2
+  - `index:cluster:<cluster_name>` This is a medium level entry that contains
+    the elements (hosts) that are in a cluster
+    - type: redis set
+    - content: cluster hosts
+    - example `index:cluster:coreos` {nginx, cApp, configServer}
+  - `list:cluster:<cluster_name>` This is a clone of the previous, used to hold
+    order or load balanced hosts. This element stays in order to obey load
+    balancer algoritms
+    - type: redis unordered set (list)
+    - content: cluster hosts
+    - example `list:cluster:coreos` {nginx, cApp, configServer}
+  - `index:master` This a persistent index that hold a list of all clusters
+    (this persists across nsproxy reboots)
+    - type: redis set
+    - content: clusters
+    - example `index:master` {coreos, neatCluster, ps2_cluster}
+  - `index:live` This is volitile entry that gets diffed against `index:master`
+    and only contains hosts that have live listeners
+    - type: redis set
+    - content: clusters
+    - example `index:master` {coreos, neatCluster, ps2_cluster}
