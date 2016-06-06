@@ -10,22 +10,22 @@ entries.
   nsproxy uses gcfg (INI-style config files for go structs).  The config uses
   some pretty sane defauls but the following fields are configurable:  
   ```
-  - [server]
+  [server]
     - port:  the port the main DNS server listens on.
     - loglevel:  the verbosity of logs. acceptable fields are 'info', 'cluster',
     'debug', and 'error'.
-  - [clustermanager]
+  [clustermanager]
     - useclustermanager:  whether or not to use the cluster manager. acceptable
       fields are 'true' and 'false'
     - port:  the port that cluster manager will listen on (this is what port
       clients use to check in)
     - pingfeq:  the ammout of time in between health checks (in seconds)
-  - [dns]
+  [dns]
     - ttl:  the default time to live (in seconds) for dns entries
-  - [upstreamdns]
+  [upstreamdns]
     - server:  the dns server and port that nsproxy uses if it cannot find a match in the
       local database
-  - [redis]
+  [redis]
     - host:  this is the ip and port that the redis backend is running on
     - password:  password to the redis database if one exists
   ```
