@@ -3,9 +3,10 @@
 <head>
 
     <script type="text/javascript">
-         function myWebsocketStart()
+         function initConnection()
          {
                var ws = new WebSocket("ws://localhost:3000/ws");
+               var ws2 = new WebSocket("ws://localhost:3000/ws2");
 
                ws.onmessage = function (evt)
                {
@@ -14,25 +15,37 @@
 				  writezone.innerHTML = "live hosts:<br>"
 				  hosts = evt.data.split(' ');
 				  for (var i = 0;i < hosts.length;i++){
-					  writezone.innerHTML = writezone.innerHTML + "<br>" + hosts[i]
+					  writezone.innerHTML = writezone.innerHTML + "<br>" + "<div class=\"bullet livehost\"><\/div>" + hosts[i]
 				  }
+				  //console.log(evt.data)
+               };
+
+               ws2.onmessage = function (evt)
+               {
+				   var writezone = document.getElementById("currentzone")
+				  //document.getElementById("hostzone").innerHTML = "live hosts:"
+				  writezone.innerHTML = "<br>" + "<div class=\"bullet lbalanced\"><\/div>" + evt.data
 				  //console.log(evt.data)
                };
 
                ws.onclose = function()
                {
                   var writezone = document.getElementById("hostzone");
-				  writezone.innerHTML = writezone.innerHTML + "<br><br>" + "connection to server closed";
+				  writezone.innerHTML = writezone.innerHTML.replace(/livehost/i, 'midhost');
+				  writezone.innerHTML = writezone.innerHTML.split('livehost').join('midhost');
+				  //writezone.innerHTML = writezone.innerHTML + "<br><br>" + "<div> class=\"bullet downhost\"<\/div>connection to server closed";
+				  writezone.innerHTML = writezone.innerHTML + "<br><br>" + "<div class=\"bullet downhost\"><\/div>connection to server closed";
                   //myTextArea.value = myTextArea.value + "\n" + "Connection closed";
                };
 
          }
 
     </script>
-
+	<link rel="stylesheet" href="/style.css">
 </head>
 <body>
-<button onclick="javascript:myWebsocketStart()">follow hosts</button>
+<button onclick="javascript:initConnection()">follow hosts</button>
+<div id="currentzone"></div>
 <div id="hostzone"></div>
 </body>
 </html>

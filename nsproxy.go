@@ -212,6 +212,23 @@ func cnameBuilder(hostname, lookup string) *dns.CNAME {
 func websocketHandler(redisClient *redis.Client) {
 	indexFile, _ := os.Open("index.html")
 	index, _ := ioutil.ReadAll(indexFile)
+	styleFile, _ := os.Open("style.css")
+	style, _ := ioutil.ReadAll(styleFile)
+	http.HandleFunc("/ws2", func(w http.ResponseWriter, r *http.Request) {
+		var err error
+		conn, err := upgrader.Upgrade(w, r, nil)
+		if err != nil {
+			glogger.Error.Println(err)
+			return
+		}
+		for {
+			time.Sleep(1 * time.Second)
+
+			liveHosts, _ := redisClient.LRange("list:cluster:coreos", 0, 0).Result()
+			liveHostString := strings.Join(liveHosts[:], " ")
+			conn.WriteMessage(websocket.TextMessage, []byte(liveHostString))
+		}
+	})
 	http.HandleFunc("/ws", func(w http.ResponseWriter, r *http.Request) {
 		var err error
 		conn, err := upgrader.Upgrade(w, r, nil)
@@ -219,7 +236,6 @@ func websocketHandler(redisClient *redis.Client) {
 			glogger.Error.Println(err)
 			return
 		}
-		//updateHosts(redisClient)
 		for {
 			time.Sleep(1 * time.Second)
 
@@ -227,13 +243,13 @@ func websocketHandler(redisClient *redis.Client) {
 			liveHostString := strings.Join(liveHosts[:], " ")
 			conn.WriteMessage(websocket.TextMessage, []byte(liveHostString))
 		}
-		//for {
-		//	time.Sleep(2 * time.Second)
-		//	updateHosts(redisClient)
-		//}
 	})
 	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
 		fmt.Fprintf(w, string(index))
+	})
+	http.HandleFunc("/style.css", func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Content-Type", "text/css")
+		fmt.Fprintf(w, string(style))
 	})
 	http.ListenAndServe(":3000", nil)
 }

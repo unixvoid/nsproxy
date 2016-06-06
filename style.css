@@ -1,0 +1,24 @@
+.livehost {
+	background: #5BCC8B;
+}
+
+.midhost {
+	background: #E6BB46;
+}
+
+.downhost {
+	background: #DF7065;
+}
+
+.lbalanced {
+	background: #7F9AE9;
+}
+
+.bullet {
+  height: 11px;
+  width: 11px;
+  display: inline-block;
+	border-radius: 50% 50%;
+  vertical-align: middle;
+  margin-right: 5px;
+}
