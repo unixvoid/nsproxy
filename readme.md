@@ -1,74 +1,67 @@
 nsproxy
 =======
 
-nsproxy is a DNS proxy written in go.
-This project acts as a normal DNS server but will allow
-you to change spoof entries on the fly. Packaged in this
-project is a remote manager that can be chained with the
-nsproxy to update and add entries during runtime.
+nsproxy is a DNS proxy and cluster manager written in go.  This project acts as
+a normal DNS server (in addition to the cluster managment) and allows the use of
+custom DNS entries.  Currently nsproxy fully supports A, AAAA, and CNAME
+entries.
+
+- **configuration**  
+  nsproxy uses gcfg (INI-style config files for go structs).  The config uses
+  some pretty sane defauls but the following fields are configurable:  
+  - [server]
+    - port:  the port the main DNS server listens on.
+    - loglevel:  the verbosity of logs. acceptable fields are 'info', 'cluster',
+    'debug', and 'error'.
+  - [clustermanager]
+    - useclustermanager:  whether or not to use the cluster manager. acceptable
+      fields are 'true' and 'false'
+    - port:  the port that cluster manager will listen on (this is what port
+      clients use to check in)
+    - pingfeq:  the ammout of time in between health checks (in seconds)
+  - [dns]
+    - ttl:  the default time to live (in seconds) for dns entries
+  - [upstreamdns]
+    - server:  the dns server and port that nsproxy uses if it cannot find a match in the
+      local database
+  - [redis]
+    - host:  this is the ip and port that the redis backend is running on
+    - password:  password to the redis database if one exists
+
+- **nsproxy usage**
+  The following usage implies the default config file is being used.
+  - On boot nsproxy will bind to two ports:
+    - `8053` is used as the regular dns server.  This will act the same as any
+      other dns server and allows for custom dns entries to be used.
+    - `8080` is used as the cluster manager.  Clients should post to this port
+      to bind with the dns server.
+  - For now adding custom dns is being reworked and should be considered WIP.
+    The only way to add custom entries is to add them in redis.  Redis stores
+    the keys in the following format.
+    - `dns:<dns_type>:<fqdn> and the content being a valid A, AAAA, or CNAME
+      entry.  Here are some examples on what typical redis entries would look
+      like.
+      - entry: `dns:a:unixvoid.com.` content: `67.3.192.22`
+      - entry: `dns:aaaa:unixvoid.com.` content: `::1`
+      - entry: `dns:cname:unixvoid.com.` content: `customlb.cname.`
+  - To register a client with the cluster manager, the client will send a form
+    (`application/x-www-form-urlencoded`) to nsproxy with the following data.
+    - `hostname`:  the hostname of the box
+    - `cluster`:  the intended cluster to join.  
+    Both of these fields are required.  A regular client registration looks like
+    this:  
+    `curl -d hostname=nginx -d cluster=coreos unixvoid.com:8080`  This will add
+    the host `nginx` to the cluster `coreos`.  These names are arbitrary and can
+    be anything.  
 
 - **building**  
-  this project requires golang if you want to build from source  
-  to build the project you can clone it down with
-  `git clone https://github.com/unixvoid/nsproxy`  
-  and simply issue `go run nsproxy`.  
-  The project is also in dockerhub `https://hub.docker.com/r/mfaltys/nsproxy/`  
-  The dockerfile can be found in `builddeps` and on the dockerhub  
-
-- **nsproxy**  
-  nsproxy will take these arguments if you wish to specify:  
-  `-p` this is the port the nsproxy listens on, default is 53  
-  `-debug` this will start nsproxy with debug logs  
-  `-upstream` this is the upstream DNS, default is 8.8.8.8:53  
-  `-chain` This will run the remote manager along with the nsproxy
-  this starts the remote manager on port 8054.  
-
-- **remotemanager**  
-  remotemanager is a tool used to list, add, remove, and modify custom
-  entries in the nsproxy. Runtime flags are as follows:  
-  `-p` this sets the listening port, default is 8054  
-  commands can be curled from the terminal, or any other way that
-  supports GET requests. The following commands are ones that can be
-  issued in a web browser.  
-  ```
-  !list   : lists all entris
-  !add    : adds a record
-  !rm     : removes a record
-  !modify : modifies a record
-  ```
-
-  examples:  
-  `localhost:8054/!list` will list all entries  
-  `localhost:8054/!new github.com 8.8.8.8` github.com will now resolve to 8.8.8.8  
-  `localhost:8054/!rm github.com` will remove the github.com entry from our storage  
-
-- **localmanager**  
-  this is a simple tool to modify records locally, and takes all the same commands
-  as remotemanager but locally. This is to be run in the same directory as nsproxy.  
-
-  ```
-  -list   : lists all entris
-  -add    : adds a record
-  -rm     : removes a record
-  -modify : modifies a record
-  ```
-
-  examples:  
-  `go run localmanager -list` will list all entries  
-  `go run localmanager -new github.com 8.8.8.8` github.com will now resolve to 8.8.8.8  
-  `go run localmanager -rm github.com` will remove the github.com entry from our storage  
-
-- **other building procedures**  
-  If you would like to build your own dockerfile, you can stage the built images
-  in the `builddeps` directory and build the dockerfile from there. Common usage
-  is as follows:  
-
-  ```
-  $make stage
-  ..statically compiled binaries are moved to builddeps/
-  $cd builddeps/
-  $docker build -t nsproxy .
-  ..build docker image 'nsproxy'
-  $docker run -d -p 53:53 -p 8054:8054 nsproxy
-  ..run daemonized container with webproxy running on 8054
-  ```
+   This project requires golang to be installed with the dependencies in place.
+   To pull the dependencies on your box simply issue `make deps` to do all the
+   `go get`s for you.  
+   make will accept the following commands:  
+   - `make nsproxy` will dynamically build nsproxy
+   - `make stat` will statically build nsproxy
+   - `make stage` will build and stage all files for preperation of building a
+     container
+   - `make install` will install the compiled nsproxy in /usr/bin/
+   - `make clean` will clean the project of all tmp directories and binaries

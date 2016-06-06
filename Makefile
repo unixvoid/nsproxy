@@ -14,20 +14,25 @@ stage: nsproxy.go
 	make stat
 	make statremote
 	mv nsproxy builddeps/
-	mv remotemanager builddeps/
 
 stat: nsproxy.go
 	$(CGOR) $(GOC) $(GOFLAGS) nsproxy.go
 
-statremote: remotemanager.go
-	$(CGOR) $(GOC) $(GOFLAGS) remotemanager.go
-
 install: stat
-	cp nsproxy /usr/bin
+	cp nsproxy /usr/bin/
 
 link:
 	mkdir -p $(GOPATH)/src/git.unixvoid.com/mfaltys/
 	ln -s $(shell pwd) $(GOPATH)/src/git.unixvoid.com/mfaltys/
+
+deps:
+	go get github.com/gorilla/mux
+	go get gopkg.in/gcfg.v1
+	go get git.unixvoid.com/mfaltys/glogger
+	go get git.unixvoid.com/mfaltys/nsproxy/nsmanager
+	go get github.com/miekg/dns
+	go get gopkg.in/redis.v3
+	go get github.com/tatsushid/go-fastping
 
 test:
 	@echo "----------------------------------------------------------------------"
@@ -43,10 +48,6 @@ test:
 
 clean:
 	rm -f nsproxy
-	rm -f remotemanager
-	rm -f localmanager
 	rm -f builddeps/nsproxy
-	rm -f builddeps/remotemanager
-	rm -f builddeps/localmanager
 
 #CGO_ENABLED=0 go build -a -ldflags '-s' nsproxy.go

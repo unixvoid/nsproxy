@@ -5,16 +5,13 @@
 [clustermanager]
 	useclustermanager	= true
 	port			= 8080
-	hostTTL			= 2
-	clusterTTL		= 3
-	pingFreq		= 4
+	pingfreq		= 4
 
 [dns]
 	ttl				= 60
 
 [upstreamdns]
 	server			= "8.8.8.8:53"
-	port			= 53
 
 [redis]
 	host			= "localhost:6379"

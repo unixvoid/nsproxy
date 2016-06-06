@@ -1,5 +1,6 @@
 TODO
 ------
+- add ip field when registering (in case host is behind proxy/nsproxy picksup the wrong ip)
 - layout:  
   the new layout will look like the following when done:  
   - central server will register IPs/domain names and store them

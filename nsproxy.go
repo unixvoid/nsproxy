@@ -26,8 +26,6 @@ type Config struct {
 	Clustermanager struct {
 		UseClusterManager bool
 		Port              int
-		HostTTL           time.Duration
-		ClusterTTL        time.Duration
 		PingFreq          time.Duration
 	}
 	Dns struct {
@@ -35,7 +33,6 @@ type Config struct {
 	}
 	Upstreamdns struct {
 		Server string
-		Port   int
 	}
 	Redis struct {
 		Host     string
@@ -99,7 +96,6 @@ func route(w dns.ResponseWriter, req *dns.Msg) {
 func proxy(addr string, w dns.ResponseWriter, req *dns.Msg, redisClient *redis.Client) {
 	hostname := req.Question[0].Name
 	if strings.Contains(hostname, "cluster:") {
-		// 'cluster:fedora'
 		// it is a cluster entry, forward the request to the dns cluster handler
 		// remove the FQDM '.' from end of 'hostname'
 		fqdnHostname := hostname
@@ -108,12 +104,8 @@ func proxy(addr string, w dns.ResponseWriter, req *dns.Msg, redisClient *redis.C
 		// grab the first item in the list
 		firstEntry, _ := redisClient.LIndex(fmt.Sprintf("list:%s", hostname), 0).Result()
 
-		// cluster ip is found at <hostname>:<firstEntry> (resolves to cluster:fedora:test1)
-		//ip, _ := redisClient.Get(fmt.Sprintf("%s:%s", hostname, firstEntry)).Result()
-		//glogger.Cluster.Println(ip)
 		// return ip to client
 		lookup, _ := nsmanager.ClusterQuery(hostname, firstEntry, redisClient)
-		//customRR := aBuilder(hostname, lookup)
 		customRR := aBuilder(fqdnHostname, lookup)
 		rep := new(dns.Msg)
 		rep.SetReply(req)
@@ -187,7 +179,6 @@ func mainBuilder(w dns.ResponseWriter, req, resp *dns.Msg, hostname string, redi
 }
 
 func aBuilder(hostname, lookup string) *dns.A {
-	// craft the A record response
 	rr := new(dns.A)
 	rr.Hdr = dns.RR_Header{Name: hostname, Rrtype: dns.TypeA, Class: dns.ClassINET, Ttl: config.Dns.Ttl}
 	addr := strings.TrimSuffix(lookup, "\n")
@@ -196,7 +187,6 @@ func aBuilder(hostname, lookup string) *dns.A {
 }
 
 func aaaaBuilder(hostname, lookup string) *dns.AAAA {
-	// craft the A record response
 	rr := new(dns.AAAA)
 	rr.Hdr = dns.RR_Header{Name: hostname, Rrtype: dns.TypeAAAA, Class: dns.ClassINET, Ttl: config.Dns.Ttl}
 	addr := strings.TrimSuffix(lookup, "\n")
@@ -205,7 +195,6 @@ func aaaaBuilder(hostname, lookup string) *dns.AAAA {
 }
 
 func cnameBuilder(hostname, lookup string) *dns.CNAME {
-	// craft the A record response
 	rr := new(dns.CNAME)
 	rr.Hdr = dns.RR_Header{Name: hostname, Rrtype: dns.TypeCNAME, Class: dns.ClassINET, Ttl: config.Dns.Ttl}
 	rr.Target = lookup
@@ -231,12 +220,12 @@ func asyncClusterListener() {
 		clusterHandler(w, r, redisClient)
 	})
 
+	// check index:master against index:live
 	clusterDiff(redisClient)
 	log.Fatal(http.ListenAndServe(port, router))
 }
 
 func clusterHandler(w http.ResponseWriter, r *http.Request, redisClient *redis.Client) {
-	// curl -d hostname=testname -d cluster=testcluster http://localhost:8080
 	ip := strings.Split(r.RemoteAddr, ":")[0]
 
 	r.ParseForm()
@@ -286,6 +275,7 @@ func spawnClusterManager(cluster, hostname, ip string, redisClient *redis.Client
 	redisClient.SRem(fmt.Sprintf("index:cluster:%s", cluster), hostname)
 	syncList(cluster, redisClient)
 
+	// remove the host form master and live index entries
 	redisClient.SRem("index:master", fmt.Sprintf("%s:%s", cluster, hostname))
 	redisClient.SRem("index:live", fmt.Sprintf("%s:%s", cluster, hostname))
 }
@@ -293,7 +283,7 @@ func spawnClusterManager(cluster, hostname, ip string, redisClient *redis.Client
 func clusterDiff(redisClient *redis.Client) {
 	// 'sdiff index:master index:live' will return the set of hosts
 	// that do not have listeners currently attached
-	glogger.Cluster.Println("diffing cluster")
+	glogger.Debug.Println("diffing cluster")
 	diffString := redisClient.SDiff("index:master", "index:live")
 	tmp, _ := diffString.Result()
 	// for ever entry that is not in index:live
@@ -309,11 +299,10 @@ func clusterDiff(redisClient *redis.Client) {
 	}
 }
 
-// TODO add sync function to sync 'index:cluster:<cluster_name>' and 'list:cluster:<cluster_name>'
-// we use the list to load balance (aka order matters)
-// this will get synced every time a element is added or subtracted from the index
 func syncList(cluster string, redisClient *redis.Client) {
-	glogger.Cluster.Println("syncing list")
+	// sync a cluster index entry to a list. the redis set is used for speed, and the
+	// redis list (sorted set) is used for load balancer algorithms
+	glogger.Debug.Println("syncing list")
 	indexString, _ := redisClient.SInter(fmt.Sprintf("index:cluster:%s", cluster)).Result()
 	// populate a tmp list
 	for _, i := range indexString {
