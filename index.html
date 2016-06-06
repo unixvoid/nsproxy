@@ -13,14 +13,14 @@
 				  writezone.innerHTML = ""
 				  hosts = evt.data.split(' ');
 
-				  var proString = "<table>"
+				   var proString = "<table class=\"hosttable\"><thead><th>Hostname<\/th><th>IP<\/th><\/thead><tbody>"
 				  for (var i = 1;i < hosts.length;i++){
 					  var array = hosts[i].split(','),
 					      hostname = array[0], ip = array[1]
 					  //writezone.innerHTML = writezone.innerHTML + "<div class=\"bullet livehost\"><\/div>" + hostname + " " + ip + "<br>";
 				      proString = proString + "<tr><td>" + "<div class=\"bullet livehost\"><\/div>" + hostname + "<\/td><td>" + ip + "<\/td>" + "<\/tr>";
 				  }
-				  proString = proString + "<\/table>";
+				   proString = proString + "<\/tbody><\/table>";
 				  writezone.innerHTML = proString;
                };
 
