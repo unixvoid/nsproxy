@@ -24,10 +24,11 @@ type Config struct {
 		Loglevel string
 	}
 	Clustermanager struct {
-		Port       int
-		HostTTL    time.Duration
-		ClusterTTL time.Duration
-		PingFreq   time.Duration
+		UseClusterManager bool
+		Port              int
+		HostTTL           time.Duration
+		ClusterTTL        time.Duration
+		PingFreq          time.Duration
 	}
 	Dns struct {
 		Ttl uint32
@@ -65,8 +66,10 @@ func main() {
 		glogger.LogInit(ioutil.Discard, ioutil.Discard, ioutil.Discard, os.Stderr)
 	}
 
-	// start async cluster listener
-	go asyncClusterListener()
+	if config.Clustermanager.UseClusterManager {
+		// start async cluster listener
+		go asyncClusterListener()
+	}
 
 	// format the string to be :port
 	port := fmt.Sprint(":", config.Server.Port)
@@ -110,14 +113,13 @@ func proxy(addr string, w dns.ResponseWriter, req *dns.Msg, redisClient *redis.C
 		//glogger.Cluster.Println(ip)
 		// return ip to client
 		lookup, _ := nsmanager.ClusterQuery(hostname, firstEntry, redisClient)
-		println(lookup)
 		//customRR := aBuilder(hostname, lookup)
 		customRR := aBuilder(fqdnHostname, lookup)
 		rep := new(dns.Msg)
 		rep.SetReply(req)
 		rep.Answer = append(rep.Answer, customRR)
 
-		glogger.Cluster.Println("serving", hostname, "from local record")
+		glogger.Debug.Println("serving", hostname, "from local record")
 		w.WriteMsg(rep)
 
 		// pop the list and add the entry to the end, it just got lb'd

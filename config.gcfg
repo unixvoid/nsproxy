@@ -3,6 +3,7 @@
 	loglevel		= "cluster"
 
 [clustermanager]
+	useclustermanager	= true
 	port			= 8080
 	hostTTL			= 2
 	clusterTTL		= 3
