@@ -28,29 +28,19 @@ entries.
 
 - **nsproxy usage**
   The following usage implies the default config file is being used.
-  - On boot nsproxy will bind to two ports:
-    - `8053` is used as the regular dns server.  This will act the same as any
-      other dns server and allows for custom dns entries to be used.
-    - `8080` is used as the cluster manager.  Clients should post to this port
-      to bind with the dns server.
-  - For now adding custom dns is being reworked and should be considered WIP.
-    The only way to add custom entries is to add them in redis.  Redis stores
-    the keys in the following format.
-    - `dns:<dns_type>:<fqdn> and the content being a valid A, AAAA, or CNAME
-      entry.  Here are some examples on what typical redis entries would look
-      like.
-      - entry: `dns:a:unixvoid.com.` content: `67.3.192.22`
-      - entry: `dns:aaaa:unixvoid.com.` content: `::1`
-      - entry: `dns:cname:unixvoid.com.` content: `customlb.cname.`
+  On boot nsproxy will bind to two ports:
+  - `8053` is used as the regular dns server.  This will act the same as any other dns server and allows for custom dns entries to be used.
+  - `8080` is used as the cluster manager.  Clients should post to this port to bind with the dns server.
+  - For now adding custom dns is being reworked and should be considered WIP. The only way to add custom entries is to add them in redis.  Redis stores the keys in the following format.
+  - `dns:<dns_type>:<fqdn> and the content being a valid A, AAAA, or CNAME entry.  Here are some examples on what typical redis entries would look like.
+    - entry: `dns:a:unixvoid.com.` content: `67.3.192.22`
+    - entry: `dns:aaaa:unixvoid.com.` content: `::1`
+    - entry: `dns:cname:unixvoid.com.` content: `customlb.cname.`
   - To register a client with the cluster manager, the client will send a form
     (`application/x-www-form-urlencoded`) to nsproxy with the following data.
     - `hostname`:  the hostname of the box
     - `cluster`:  the intended cluster to join.  
-    Both of these fields are required.  A regular client registration looks like
-    this:  
-    `curl -d hostname=nginx -d cluster=coreos unixvoid.com:8080`  This will add
-    the host `nginx` to the cluster `coreos`.  These names are arbitrary and can
-    be anything.  
+    Both of these fields are required.  A regular client registration looks like this: `curl -d hostname=nginx -d cluster=coreos unixvoid.com:8080`  This will add the host `nginx` to the cluster `coreos`.  These names are arbitrary and can be anything.  
 
 - **building**  
    This project requires golang to be installed with the dependencies in place.
