@@ -214,21 +214,6 @@ func websocketHandler(redisClient *redis.Client) {
 	index, _ := ioutil.ReadAll(indexFile)
 	styleFile, _ := os.Open("style.css")
 	style, _ := ioutil.ReadAll(styleFile)
-	http.HandleFunc("/ws2", func(w http.ResponseWriter, r *http.Request) {
-		var err error
-		conn, err := upgrader.Upgrade(w, r, nil)
-		if err != nil {
-			glogger.Error.Println(err)
-			return
-		}
-		for {
-			time.Sleep(1 * time.Second)
-
-			liveHosts, _ := redisClient.LRange("list:cluster:coreos", 0, 0).Result()
-			liveHostString := strings.Join(liveHosts[:], " ")
-			conn.WriteMessage(websocket.TextMessage, []byte(liveHostString))
-		}
-	})
 	http.HandleFunc("/ws", func(w http.ResponseWriter, r *http.Request) {
 		var err error
 		conn, err := upgrader.Upgrade(w, r, nil)
@@ -240,7 +225,16 @@ func websocketHandler(redisClient *redis.Client) {
 			time.Sleep(1 * time.Second)
 
 			liveHosts, _ := redisClient.SInter("index:live").Result()
-			liveHostString := strings.Join(liveHosts[:], " ")
+			//liveHostString := strings.Join(liveHosts[:], " ")
+			liveHostString := ""
+			for _, i := range liveHosts {
+				// get the host ip
+				// coreos:test1
+				ip, _ := redisClient.Get(fmt.Sprintf("cluster:%s", i)).Result()
+				// drop the host followed by ip in this syntax: {host,ip host,ip}
+				liveHostString = fmt.Sprintf("%s %s", liveHostString, fmt.Sprintf("%s,%s", i, ip))
+
+			}
 			conn.WriteMessage(websocket.TextMessage, []byte(liveHostString))
 		}
 	})

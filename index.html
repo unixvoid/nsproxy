@@ -6,28 +6,22 @@
          function initConnection()
          {
                var ws = new WebSocket("ws://localhost:3000/ws");
-               var ws2 = new WebSocket("ws://localhost:3000/ws2");
 
                ws.onmessage = function (evt)
                {
 				   var writezone = document.getElementById("hostzone")
-				  //document.getElementById("hostzone").innerHTML = "live hosts:"
-				  //writezone.innerHTML = "live hosts:<br>"
 				  writezone.innerHTML = ""
 				  hosts = evt.data.split(' ');
-				  for (var i = 0;i < hosts.length;i++){
-					  //writezone.innerHTML = writezone.innerHTML + "<br>" + "<div class=\"bullet livehost\"><\/div>" + hosts[i]
-					  writezone.innerHTML = writezone.innerHTML + "<div class=\"bullet livehost\"><\/div>" + hosts[i] + "<br>";
-				  }
-				  //console.log(evt.data)
-               };
 
-               ws2.onmessage = function (evt)
-               {
-				   var writezone = document.getElementById("currentzone")
-				  //document.getElementById("hostzone").innerHTML = "live hosts:"
-				  writezone.innerHTML = "<br>" + "<div class=\"bullet lbalanced\"><\/div>" + evt.data
-				  //console.log(evt.data)
+				  var proString = "<table>"
+				  for (var i = 1;i < hosts.length;i++){
+					  var array = hosts[i].split(','),
+					      hostname = array[0], ip = array[1]
+					  //writezone.innerHTML = writezone.innerHTML + "<div class=\"bullet livehost\"><\/div>" + hostname + " " + ip + "<br>";
+				      proString = proString + "<tr><td>" + "<div class=\"bullet livehost\"><\/div>" + hostname + "<\/td><td>" + ip + "<\/td>" + "<\/tr>";
+				  }
+				  proString = proString + "<\/table>";
+				  writezone.innerHTML = proString;
                };
 
                ws.onclose = function()
@@ -35,19 +29,18 @@
                   var writezone = document.getElementById("hostzone");
 				  writezone.innerHTML = writezone.innerHTML.replace(/livehost/i, 'midhost');
 				  writezone.innerHTML = writezone.innerHTML.split('livehost').join('midhost');
-				  //writezone.innerHTML = writezone.innerHTML + "<br><br>" + "<div> class=\"bullet downhost\"<\/div>connection to server closed";
-				  writezone.innerHTML = writezone.innerHTML + "<br><br>" + "<div class=\"bullet downhost\"><\/div>connection to server closed";
-                  //myTextArea.value = myTextArea.value + "\n" + "Connection closed";
+				  writezone.innerHTML = writezone.innerHTML + "<br>" + "<div class=\"bullet downhost\"><\/div>connection to server closed";
                };
 
          }
-
+		 window.onload = initConnection;
     </script>
 	<link rel="stylesheet" href="/style.css">
 </head>
 <body>
+<!--
 <button onclick="javascript:initConnection()">follow hosts</button>
-<div id="currentzone"></div>
+-->
 <div id="hostzone"></div>
 </body>
 </html>
