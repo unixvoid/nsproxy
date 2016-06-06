@@ -1,3 +1,10 @@
+body {
+  font-family: "Courier New", Courier, monospace;
+  color: #3f3f3f;
+  /*padding-top: 3%;*/
+  /*background-color: #d3d3d3;*/
+}
+
 .livehost {
 	background: #5BCC8B;
 }
@@ -15,6 +22,16 @@
 }
 
 .hosttable {
+  color: #3f3f3f;
+  border-radius: 2px;
+  border: 2px solid rgba(0, 0, 0, 0.3);
+  padding: 10px 16px;
+}
+
+thead {
+  font-weight: normal;
+  font-size: 14px;
+
 }
 
 .bullet {
