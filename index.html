@@ -12,10 +12,12 @@
                {
 				   var writezone = document.getElementById("hostzone")
 				  //document.getElementById("hostzone").innerHTML = "live hosts:"
-				  writezone.innerHTML = "live hosts:<br>"
+				  //writezone.innerHTML = "live hosts:<br>"
+				  writezone.innerHTML = ""
 				  hosts = evt.data.split(' ');
 				  for (var i = 0;i < hosts.length;i++){
-					  writezone.innerHTML = writezone.innerHTML + "<br>" + "<div class=\"bullet livehost\"><\/div>" + hosts[i]
+					  //writezone.innerHTML = writezone.innerHTML + "<br>" + "<div class=\"bullet livehost\"><\/div>" + hosts[i]
+					  writezone.innerHTML = writezone.innerHTML + "<div class=\"bullet livehost\"><\/div>" + hosts[i] + "<br>";
 				  }
 				  //console.log(evt.data)
                };
