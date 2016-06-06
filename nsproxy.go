@@ -2,8 +2,6 @@ package main
 
 import (
 	"fmt"
-	"github.com/gorilla/mux"
-	"gopkg.in/gcfg.v1"
 	"io/ioutil"
 	"log"
 	"net"
@@ -14,7 +12,10 @@ import (
 
 	"git.unixvoid.com/mfaltys/glogger"
 	"git.unixvoid.com/mfaltys/nsproxy/nsmanager"
+	"github.com/gorilla/mux"
+	"github.com/gorilla/websocket"
 	"github.com/miekg/dns"
+	"gopkg.in/gcfg.v1"
 	"gopkg.in/redis.v3"
 )
 
@@ -41,7 +42,14 @@ type Config struct {
 }
 
 var (
-	config = Config{}
+	config   = Config{}
+	upgrader = websocket.Upgrader{
+		CheckOrigin: func(r *http.Request) bool {
+			return true
+		},
+		ReadBufferSize:  1024,
+		WriteBufferSize: 1024,
+	}
 )
 
 func main() {
@@ -201,6 +209,35 @@ func cnameBuilder(hostname, lookup string) *dns.CNAME {
 	return rr
 }
 
+func websocketHandler(redisClient *redis.Client) {
+	indexFile, _ := os.Open("index.html")
+	index, _ := ioutil.ReadAll(indexFile)
+	http.HandleFunc("/ws", func(w http.ResponseWriter, r *http.Request) {
+		var err error
+		conn, err := upgrader.Upgrade(w, r, nil)
+		if err != nil {
+			glogger.Error.Println(err)
+			return
+		}
+		//updateHosts(redisClient)
+		for {
+			time.Sleep(1 * time.Second)
+
+			liveHosts, _ := redisClient.SInter("index:live").Result()
+			liveHostString := strings.Join(liveHosts[:], " ")
+			conn.WriteMessage(websocket.TextMessage, []byte(liveHostString))
+		}
+		//for {
+		//	time.Sleep(2 * time.Second)
+		//	updateHosts(redisClient)
+		//}
+	})
+	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
+		fmt.Fprintf(w, string(index))
+	})
+	http.ListenAndServe(":3000", nil)
+}
+
 func asyncClusterListener() {
 	// async listener gets its own redis connection
 	redisClient := redis.NewClient(&redis.Options{
@@ -219,6 +256,9 @@ func asyncClusterListener() {
 	router.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
 		clusterHandler(w, r, redisClient)
 	})
+
+	// start async websocket server
+	go websocketHandler(redisClient)
 
 	// check index:master against index:live
 	clusterDiff(redisClient)

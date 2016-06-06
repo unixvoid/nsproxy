@@ -1,0 +1,38 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+
+    <script type="text/javascript">
+         function myWebsocketStart()
+         {
+               var ws = new WebSocket("ws://localhost:3000/ws");
+
+               ws.onmessage = function (evt)
+               {
+				   var writezone = document.getElementById("hostzone")
+				  //document.getElementById("hostzone").innerHTML = "live hosts:"
+				  writezone.innerHTML = "live hosts:<br>"
+				  hosts = evt.data.split(' ');
+				  for (var i = 0;i < hosts.length;i++){
+					  writezone.innerHTML = writezone.innerHTML + "<br>" + hosts[i]
+				  }
+				  //console.log(evt.data)
+               };
+
+               ws.onclose = function()
+               {
+                  var writezone = document.getElementById("hostzone");
+				  writezone.innerHTML = writezone.innerHTML + "<br><br>" + "connection to server closed";
+                  //myTextArea.value = myTextArea.value + "\n" + "Connection closed";
+               };
+
+         }
+
+    </script>
+
+</head>
+<body>
+<button onclick="javascript:myWebsocketStart()">follow hosts</button>
+<div id="hostzone"></div>
+</body>
+</html>

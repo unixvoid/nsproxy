@@ -5,7 +5,7 @@
 [clustermanager]
 	useclustermanager	= true
 	port			= 8080
-	pingfreq		= 4
+	pingfreq		= 2
 
 [dns]
 	ttl				= 60
