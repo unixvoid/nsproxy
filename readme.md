@@ -6,24 +6,24 @@ a normal DNS server (in addition to the cluster managment) and allows the use of
 custom DNS entries.  Currently nsproxy fully supports A, AAAA, and CNAME
 entries.
 
-## configuration  
-nsproxy uses gcfg (INI-style config files for go structs).  The config uses some pretty sane defauls but the following fields are configurable:  
-**[server]**  
-`port:`  the port the main DNS server listens on.  
-`loglevel:`  the verbosity of logs. acceptable fields are 'info', 'cluster', 'debug', and 'error'.  
-**[clustermanager]**  
-`useclustermanager:`  whether or not to use the cluster manager. acceptable fields are 'true' and 'false'  
-`port:`  the port that cluster manager will listen on (this is what port clients use to check in)  
-`pingfeq:`  the ammout of time in between health checks (in seconds)  
-**[dns]**  
-`ttl:`  the default time to live (in seconds) for dns entries  
-**[upstreamdns]**  
-  `server:`  the dns server and port that nsproxy uses if it cannot find a match in the local database  
-**[redis]**  
-  `host:`  this is the ip and port that the redis backend is running on  
-  `password:`  password to the redis database if one exists
+### configuration  
+- nsproxy uses gcfg (INI-style config files for go structs).  The config uses some pretty sane defauls but the following fields are configurable:  
+- `[server]`
+  - `port:`  the port the main DNS server listens on.  
+  - `loglevel:`  the verbosity of logs. acceptable fields are 'info', 'cluster', 'debug', and 'error'.  
+- `[clustermanager]`
+  - `useclustermanager:`  whether or not to use the cluster manager. acceptable fields are 'true' and 'false'  
+  - `port:`  the port that cluster manager will listen on (this is what port clients use to check in)  
+  - `pingfeq:`  the ammout of time in between health checks (in seconds)  
+- `[dns]`
+  - `ttl:`  the default time to live (in seconds) for dns entries  
+- `[upstreamdns]`
+  - `server:`  the dns server and port that nsproxy uses if it cannot find a match in the local database  
+- `[redis]`  
+  - `host:`  this is the ip and port that the redis backend is running on  
+  - `password:`  password to the redis database if one exists
 
-## nsproxy usage
+### nsproxy usage
 - The following usage implies the default config file is being used.  
 - On boot nsproxy will bind to two ports:  
   - `8053` is used as the regular dns server.  This will act the same as any other dns server and allows for custom dns entries to be used.  
@@ -42,7 +42,7 @@ nsproxy uses gcfg (INI-style config files for go structs).  The config uses some
 - A regular client registration looks like this:  
     `curl -d hostname=nginx -d cluster=coreos unixvoid.com:8080`  This will add the host `nginx` to the cluster `coreos`.  These names are arbitrary and can be anything.  
 
-## building
+### building
 - This project requires golang to be installed with the dependencies in place.
 - To pull the dependencies on your box simply issue `make deps` to do all the `go get`s for you.  
 - make will accept the following commands:  
@@ -53,7 +53,7 @@ nsproxy uses gcfg (INI-style config files for go structs).  The config uses some
   - `make install` will install the compiled nsproxy in /usr/bin/
   - `make clean` will clean the project of all tmp directories and binaries
 
-## redis
+### redis
 - This is designed to help the user understand what is going on inside of redis at a low level.  The following are redis keys (with examples) and what they store.
 - `cluster:<cluster_name>:<host_name>` This is a low level entry that has a hostname's ip
   - type: redis key
