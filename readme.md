@@ -9,6 +9,7 @@ entries.
 - **configuration**  
   nsproxy uses gcfg (INI-style config files for go structs).  The config uses
   some pretty sane defauls but the following fields are configurable:  
+  ```
   - [server]
     - port:  the port the main DNS server listens on.
     - loglevel:  the verbosity of logs. acceptable fields are 'info', 'cluster',
@@ -27,6 +28,7 @@ entries.
   - [redis]
     - host:  this is the ip and port that the redis backend is running on
     - password:  password to the redis database if one exists
+  ```
 
 - **nsproxy usage**
   The following usage implies the default config file is being used.
