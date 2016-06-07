@@ -15,6 +15,9 @@ entries.
   - `useclustermanager:`  whether or not to use the cluster manager. acceptable fields are 'true' and 'false'  
   - `port:`  the port that cluster manager will listen on (this is what port clients use to check in)  
   - `pingfeq:`  the ammout of time in between health checks (in seconds)  
+  - `webpollfeq:`  the ammout of time between the web socket manager polls (in seconds)  
+  - `webhost:`   the port that websockets are exposed on  
+  - `webhostdeadtime:`  the ammout of time in between health checks (in minutes)  
 - `[dns]`
   - `ttl:`  the default time to live (in seconds) for dns entries  
 - `[upstreamdns]`
@@ -52,6 +55,13 @@ entries.
      container
   - `make install` will install the compiled nsproxy in /usr/bin/
   - `make clean` will clean the project of all tmp directories and binaries
+
+### websockets
+- This branch has websocket support built in so you can tap into your own data and integrate it into a live host dashboard or something even cooler.  
+- I am no good at creating frontends, so I expose 2 websockets  
+  - `/ws` this websocket sends information about live hosts in this format `<cluster>:<hostname>,<ip>`  
+  - `/ws2` this websocket sends information about dead hosts in this format `<cluster>:<hostname>,<ip>`  
+- For an example on how to use these websockets, check out data/index.html  
 
 ### redis
 - This is designed to help the user understand what is going on inside of redis at a low level.  The following are redis keys (with examples) and what they store.
