@@ -5,7 +5,8 @@
     <script type="text/javascript">
          function initConnection()
          {
-               var ws = new WebSocket("ws://localhost:3000/ws");
+               siteAddr = "ws://" + window.location.hostname + ":" + window.location.port + "/ws";
+               var ws = new WebSocket(siteAddr);
 
                ws.onmessage = function (evt)
                {
