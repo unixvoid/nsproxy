@@ -25,13 +25,14 @@ body {
   color: #3f3f3f;
   border-radius: 2px;
   border: 2px solid rgba(0, 0, 0, 0.3);
-  padding: 10px 16px;
+  padding: 7px 10px 10px 16px;
+  border-spacing: 14px 0px;
 }
 
 thead {
   font-weight: normal;
   font-size: 14px;
-
+  border-bottom: 1px solid #3f3f3f;
 }
 
 .bullet {
