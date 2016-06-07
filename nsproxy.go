@@ -213,10 +213,10 @@ func cnameBuilder(hostname, lookup string) *dns.CNAME {
 }
 
 func websocketHandler(redisClient *redis.Client) {
-	indexFile, _ := os.Open("data/index.html")
-	index, _ := ioutil.ReadAll(indexFile)
-	styleFile, _ := os.Open("data/style.css")
-	style, _ := ioutil.ReadAll(styleFile)
+	//indexFile, _ := os.Open("data/index.html")
+	//index, _ := ioutil.ReadAll(indexFile)
+	//styleFile, _ := os.Open("data/style.css")
+	//style, _ := ioutil.ReadAll(styleFile)
 	http.HandleFunc("/ws", func(w http.ResponseWriter, r *http.Request) {
 		var err error
 		conn, err := upgrader.Upgrade(w, r, nil)
@@ -275,13 +275,13 @@ func websocketHandler(redisClient *redis.Client) {
 			}
 		}
 	})
-	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
-		fmt.Fprintf(w, string(index))
-	})
-	http.HandleFunc("/style.css", func(w http.ResponseWriter, r *http.Request) {
-		w.Header().Set("Content-Type", "text/css")
-		fmt.Fprintf(w, string(style))
-	})
+	//http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
+	//	fmt.Fprintf(w, string(index))
+	//})
+	//http.HandleFunc("/style.css", func(w http.ResponseWriter, r *http.Request) {
+	//	w.Header().Set("Content-Type", "text/css")
+	//	fmt.Fprintf(w, string(style))
+	//})
 	port := fmt.Sprint(":", config.Clustermanager.WebHostPort)
 	http.ListenAndServe(port, nil)
 }
