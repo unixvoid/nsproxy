@@ -238,30 +238,6 @@ func websocketHandler(redisClient *redis.Client) {
 			conn.WriteMessage(websocket.TextMessage, []byte(liveHostString))
 		}
 	})
-	http.HandleFunc("/ws2", func(w http.ResponseWriter, r *http.Request) {
-		var err error
-		conn, err := upgrader.Upgrade(w, r, nil)
-		if err != nil {
-			glogger.Error.Println(err)
-			return
-		}
-		for {
-			time.Sleep(1 * time.Second)
-
-			liveHosts, _ := redisClient.SInter("index:dead").Result()
-			//liveHostString := strings.Join(liveHosts[:], " ")
-			liveHostString := ""
-			for _, i := range liveHosts {
-				// get the host ip
-				// coreos:test1
-				ip, _ := redisClient.Get(fmt.Sprintf("cluster:%s", i)).Result()
-				// drop the host followed by ip in this syntax: {host,ip host,ip}
-				liveHostString = fmt.Sprintf("%s %s", liveHostString, fmt.Sprintf("%s,%s", i, ip))
-
-			}
-			conn.WriteMessage(websocket.TextMessage, []byte(liveHostString))
-		}
-	})
 	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
 		fmt.Fprintf(w, string(index))
 	})
