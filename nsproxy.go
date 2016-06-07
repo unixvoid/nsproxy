@@ -28,6 +28,9 @@ type Config struct {
 		UseClusterManager bool
 		Port              int
 		PingFreq          time.Duration
+		WebPollFreq       time.Duration
+		WebHostPort       int
+		WebHostDeadTime   time.Duration
 	}
 	Dns struct {
 		Ttl uint32
@@ -54,7 +57,7 @@ var (
 
 func main() {
 	// init config file
-	err := gcfg.ReadFileInto(&config, "config.gcfg")
+	err := gcfg.ReadFileInto(&config, "data/config.gcfg")
 	if err != nil {
 		fmt.Printf("Could not load config.gcfg, error: %s\n", err)
 		return
@@ -210,9 +213,9 @@ func cnameBuilder(hostname, lookup string) *dns.CNAME {
 }
 
 func websocketHandler(redisClient *redis.Client) {
-	indexFile, _ := os.Open("index.html")
+	indexFile, _ := os.Open("data/index.html")
 	index, _ := ioutil.ReadAll(indexFile)
-	styleFile, _ := os.Open("style.css")
+	styleFile, _ := os.Open("data/style.css")
 	style, _ := ioutil.ReadAll(styleFile)
 	http.HandleFunc("/ws", func(w http.ResponseWriter, r *http.Request) {
 		var err error
@@ -221,21 +224,55 @@ func websocketHandler(redisClient *redis.Client) {
 			glogger.Error.Println(err)
 			return
 		}
+		liveHostString := ""
+		tmpHostString := ""
 		for {
-			time.Sleep(1 * time.Second)
+			// need logic to only update socket on change
+			time.Sleep(config.Clustermanager.WebPollFreq * time.Second)
 
 			liveHosts, _ := redisClient.SInter("index:live").Result()
-			//liveHostString := strings.Join(liveHosts[:], " ")
-			liveHostString := ""
+			tmpHostString = liveHostString
+			liveHostString = ""
 			for _, i := range liveHosts {
 				// get the host ip
-				// coreos:test1
 				ip, _ := redisClient.Get(fmt.Sprintf("cluster:%s", i)).Result()
 				// drop the host followed by ip in this syntax: {host,ip host,ip}
 				liveHostString = fmt.Sprintf("%s %s", liveHostString, fmt.Sprintf("%s,%s", i, ip))
 
 			}
-			conn.WriteMessage(websocket.TextMessage, []byte(liveHostString))
+			// only update websocket if there is a change
+			if liveHostString != tmpHostString {
+				conn.WriteMessage(websocket.TextMessage, []byte(liveHostString))
+			}
+		}
+	})
+	http.HandleFunc("/ws2", func(w http.ResponseWriter, r *http.Request) {
+		var err error
+		conn, err := upgrader.Upgrade(w, r, nil)
+		if err != nil {
+			glogger.Error.Println(err)
+			return
+		}
+		deadHostString := ""
+		tmpHostString := ""
+		for {
+			// need logic to only update socket on change
+			time.Sleep(config.Clustermanager.WebPollFreq * time.Second)
+
+			deadHosts, _ := redisClient.SInter("index:dead").Result()
+			tmpHostString = deadHostString
+			deadHostString = ""
+			for _, i := range deadHosts {
+				// get the host ip
+				ip, _ := redisClient.Get(fmt.Sprintf("cluster:%s", i)).Result()
+				// drop the host followed by ip in this syntax: {host,ip host,ip}
+				deadHostString = fmt.Sprintf("%s %s", deadHostString, fmt.Sprintf("%s,%s", i, ip))
+
+			}
+			// only update websocket if there is a change
+			if deadHostString != tmpHostString {
+				conn.WriteMessage(websocket.TextMessage, []byte(deadHostString))
+			}
 		}
 	})
 	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
@@ -245,7 +282,8 @@ func websocketHandler(redisClient *redis.Client) {
 		w.Header().Set("Content-Type", "text/css")
 		fmt.Fprintf(w, string(style))
 	})
-	http.ListenAndServe(":3000", nil)
+	port := fmt.Sprint(":", config.Clustermanager.WebHostPort)
+	http.ListenAndServe(port, nil)
 }
 
 func asyncClusterListener() {
@@ -318,8 +356,13 @@ func spawnClusterManager(cluster, hostname, ip string, redisClient *redis.Client
 		time.Sleep(time.Second * config.Clustermanager.PingFreq)
 	}
 	glogger.Cluster.Printf("closing %s:%s listener", cluster, hostname)
+
 	// remove the server entry, it is no longer online
-	redisClient.Del(fmt.Sprintf("cluster:%s:%s", cluster, hostname))
+	//redisClient.Del(fmt.Sprintf("cluster:%s:%s", cluster, hostname))
+	redisClient.Expire(fmt.Sprintf("cluster:%s:%s", cluster, hostname), (config.Clustermanager.WebHostDeadTime * time.Minute)).Err()
+	// add the host to the removed cluster entry
+	redisClient.SAdd("index:dead", fmt.Sprintf("%s:%s", cluster, hostname))
+	syncDead(redisClient)
 
 	// remove the index entry, it is no longer in the cluster
 	redisClient.SRem(fmt.Sprintf("index:cluster:%s", cluster), hostname)
@@ -362,4 +405,17 @@ func syncList(cluster string, redisClient *redis.Client) {
 	redisClient.Del(fmt.Sprintf("list:cluster:%s", cluster))
 	// move tmp list to current
 	redisClient.Rename(fmt.Sprintf("tmp:list:cluster:%s", cluster), fmt.Sprintf("list:cluster:%s", cluster))
+}
+
+func syncDead(redisClient *redis.Client) {
+	// for every line in index:dead, we need to remove any entries that no longer
+	// exist. these keys are set to expire every 20 mins, so we clean up the index.
+	indexString, _ := redisClient.SInter("index:dead").Result()
+	for _, i := range indexString {
+		_, err := redisClient.Get(fmt.Sprintf("cluster:%s", i)).Result()
+		if err != nil {
+			// remove the entry from index:dead
+			redisClient.LRem("index:dead", -4, i)
+		}
+	}
 }

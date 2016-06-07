@@ -1,0 +1,67 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+
+    <script type="text/javascript">
+		 var currentWs, currentWs2, wsData, ws2Data
+         function initConnection()
+         {
+               siteAddr = "ws://" + window.location.hostname + ":" + window.location.port + "/ws";
+               var ws = new WebSocket(siteAddr);
+               siteAddr2 = "ws://" + window.location.hostname + ":" + window.location.port + "/ws2";
+               var ws2 = new WebSocket(siteAddr2);
+
+               ws.onmessage = function (evt)
+               {
+				  wsData = ""
+				  hosts = evt.data.split(' ');
+				  for (var i = 1;i < hosts.length;i++){
+					  var array = hosts[i].split(','),
+					      hostname = array[0], ip = array[1]
+				      wsData = wsData + "<tr><td>" + "<div class=\"bullet livehost\"><\/div>" + hostname + "<\/td><td>" + ip + "<\/td>" + "<\/tr>";
+				  }
+				  printToClient();
+               };
+
+               ws2.onmessage = function (evt)
+               {
+				  ws2Data = ""
+				  hosts = evt.data.split(' ');
+				  for (var i = 1;i < hosts.length;i++){
+					  var array = hosts[i].split(','),
+					      hostname = array[0], ip = array[1]
+				      ws2Data = ws2Data + "<tr><td>" + "<div class=\"bullet downhost\"><\/div>" + hostname + "<\/td><td>" + ip + "<\/td>" + "<\/tr>";
+				  }
+				  printToClient();
+               };
+			   
+               ws.onclose = function()
+               {
+                  var writezone = document.getElementById("hostzone");
+				  writezone.innerHTML = writezone.innerHTML.replace(/livehost/i, 'midhost');
+				  writezone.innerHTML = writezone.innerHTML.split('livehost').join('midhost');
+				  writezone.innerHTML = writezone.innerHTML + "<br>" + "<div class=\"bullet downhost\"><\/div>connection to server closed";
+               };
+
+         }
+		 function printToClient()  
+    	 {
+             var writezone = document.getElementById("hostzone");
+
+    	     var startString = "<table class=\"hosttable\"><thead><th>Hostname<\/th><th>IP<\/th><\/thead><tbody>";
+    	     var endString = "<\/tbody><\/table>";
+    	     var printStr = startString + wsData + ws2Data + endString;
+    	     writezone.innerHTML = printStr;
+    	 };
+
+		 window.onload = initConnection;
+    </script>
+	<link rel="stylesheet" href="/style.css">
+</head>
+<body>
+<!--
+<button onclick="javascript:initConnection()">follow hosts</button>
+-->
+<div id="hostzone"></div>
+</body>
+</html>

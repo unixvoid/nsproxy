@@ -1,0 +1,21 @@
+[server]
+	port				= 8053
+	loglevel			= "cluster"
+
+[clustermanager]
+	useclustermanager	= true
+	port				= 8080
+	pingfreq			= 2
+	webpollfreq			= 2
+	webhostport			= 3000
+	webhostdeadtime		= 20
+
+[dns]
+	ttl					= 60
+
+[upstreamdns]
+	server				= "8.8.8.8:53"
+
+[redis]
+	host				= "localhost:6379"
+	password			= ""
