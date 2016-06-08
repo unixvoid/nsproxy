@@ -47,6 +47,34 @@ entries.
 - A regular client registration looks like this:  
     `curl -d hostname=nginx -d cluster=coreos unixvoid.com:8080`  This will add the host `nginx` to the cluster `coreos`.  These names are arbitrary and can be anything.  
 
+### api
+- nsproxy exposes an api for easy access to data and creating DNS records.  The following is the specification for endpoints and their protocols.  
+- `/` : `POST` : endpoint for registering hosts to the dns loadbalancer.  
+  - `hostname` : hostname of the box
+  - `cluster` : cluster the host is associated with
+  - `ip` : (optional) the ip the box is on, you only need to set this if the client is behind a proxy/loadbalancer
+  - example: `curl -d hostname=$1 -d cluster=smartos 192.168.2.201:8080`
+- `/dns` : `POST`: endpoint for adding a DNS entry to the db
+  - `dnstype` : the type of request being made: supported {a, aaaa, cname}
+  - `domain` : domain name, this will be fully qualified by nsproxy if it is not already
+  - `value` : the entry value {ip4 address for 'a', ipv6 address for 'aaaa', aname for 'aname'}
+  - example: `curl -d dnstype=CNAME -d domain=bitnuke.io -d value=turbo.lb.bitnuke.io localhost:8080/dns`
+- `/dns/rm` : `POST` : endpoint to remove a DNS entry from the db
+  - `dnstype` : (optional) dns request to remove {a, aaaa, cname}. If not set, will remove all three from the db for the domain
+  - `domain` : the domain to remove entry for
+  - example: `curl -d dnstype=a -d domain=bitnuke.io localhost:8080/dns/rm`
+- `/custerspec` : `POST` : get hosts for a specific cluster
+  - `cluster` : cluster name to get hosts for
+  - example: `curl -d cluster=smartos localhost:8080/clusterspec`
+- `/hostspec` : `POST` : get the ip of a specific host
+  - `cluster` : cluster name that the host belongs to
+  - `host` : hostname to get the ip of
+  - example: `curl -d cluster=smartos -d host=test1 localhost:8080/hostspec`
+- `/hosts` : `GET` : get a list of all live hosts (in the format <cluster>:<host>)
+  - example: `curl localhost:8080/hosts`
+- `/clusters` : `GET` : get a list of all live clusters
+  - example: `curl localhost:8080/clusters`
+
 ### building
 - This project requires golang to be installed with the dependencies in place.
 - To pull the dependencies on your box simply issue `make deps` to do all the `go get`s for you.  
