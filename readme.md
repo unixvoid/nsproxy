@@ -31,6 +31,8 @@ entries.
 - DNS entries can be added in a similar fashion to registering a host.  A POST on the same port that the clustermanager is running on in the following format will add an entry to the dns server.  
   - `/dns` dnstype= domain= value=  
     - example `curl -d dnstype=a domain=unixvoid.com value=192.168.1.80 localhost:8080/dns`  
+  - `/dns/rm` dnstype= domain= will remove a dns entry (and all for a domain if 'dnstype' not set)  
+    - example `curl -d dnstype=a domain=unixvoid.com localhost:8080/dns/rm`  
   - `dns:<dns_type>:<fqdn>` and the content being a valid A, AAAA, or CNAME entry.  
 - Here are some examples on what typical redis entries would look like.  
   - entry: `dns:a:unixvoid.com.` content: `67.3.192.22`  
