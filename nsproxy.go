@@ -75,7 +75,7 @@ func main() {
 		glogger.Error.Println("redis connection cannot be made.")
 		glogger.Error.Println("nsproxy will continue to function in passthrough mode only")
 	} else {
-		glogger.Info.Println("connection to redis succeeded.")
+		glogger.Debug.Println("connection to redis succeeded.")
 		if config.Clustermanager.UseClusterManager {
 			// start async cluster listener
 			go asyncClusterListener()
@@ -237,6 +237,9 @@ func asyncClusterListener() {
 	router.HandleFunc("/clusterspec", func(w http.ResponseWriter, r *http.Request) {
 		apiClusterSpecHandler(w, r, redisClient)
 	}).Methods("POST")
+	router.HandleFunc("/hostspec", func(w http.ResponseWriter, r *http.Request) {
+		apiHostSpecHandler(w, r, redisClient)
+	}).Methods("POST")
 	router.HandleFunc("/hosts", func(w http.ResponseWriter, r *http.Request) {
 		apiHostsHandler(w, r, redisClient)
 	}).Methods("GET")
@@ -380,6 +383,15 @@ func apiClusterSpecHandler(w http.ResponseWriter, r *http.Request, redisClient *
 	clusters, _ := redisClient.SInter("tmp:cluster:index").Result()
 	redisClient.Del("tmp:cluster:index")
 	fmt.Fprintln(w, clusters)
+}
+
+func apiHostSpecHandler(w http.ResponseWriter, r *http.Request, redisClient *redis.Client) {
+	cluster := strings.TrimSpace(r.FormValue("cluster"))
+	host := strings.TrimSpace(r.FormValue("host"))
+
+	ip, _ := redisClient.Get(fmt.Sprintf("cluster:%s:%s", cluster, host)).Result()
+
+	fmt.Fprintln(w, ip)
 }
 
 func spawnClusterManager(cluster, hostname, ip string, redisClient *redis.Client) {
