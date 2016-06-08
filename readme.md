@@ -73,7 +73,7 @@ entries.
 - `/hosts` : `GET` : get a list of all live hosts (in the format <cluster>:<host>)
   - example: `curl localhost:8080/hosts`
 - `/clusters` : `GET` : get a list of all live clusters
-  - example: `curl localhost:8080/clusters`
+  - example: `curl localhost:8080/clusters`  
 
 ### building
 - This project requires golang to be installed with the dependencies in place.
