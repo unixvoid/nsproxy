@@ -63,9 +63,23 @@ func main() {
 		glogger.LogInit(ioutil.Discard, ioutil.Discard, ioutil.Discard, os.Stderr)
 	}
 
-	if config.Clustermanager.UseClusterManager {
-		// start async cluster listener
-		go asyncClusterListener()
+	// init redis connection
+	redisClient := redis.NewClient(&redis.Options{
+		Addr:     config.Redis.Host,
+		Password: config.Redis.Password,
+		DB:       0,
+	})
+
+	_, redisErr := redisClient.Ping().Result()
+	if redisErr != nil {
+		glogger.Error.Println("redis connection cannot be made.")
+		glogger.Error.Println("nsproxy will continue to function in passthrough mode only")
+	} else {
+		glogger.Info.Println("connection to redis succeeded.")
+		if config.Clustermanager.UseClusterManager {
+			// start async cluster listener
+			go asyncClusterListener()
+		}
 	}
 
 	// format the string to be :port
@@ -74,7 +88,9 @@ func main() {
 	udpServer := &dns.Server{Addr: port, Net: "udp"}
 	tcpServer := &dns.Server{Addr: port, Net: "tcp"}
 	glogger.Info.Println("started server on", config.Server.Port)
-	dns.HandleFunc(".", route)
+	dns.HandleFunc(".", func(w dns.ResponseWriter, req *dns.Msg) {
+		route(w, req, redisClient)
+	})
 
 	go func() {
 		log.Fatal(udpServer.ListenAndServe())
@@ -82,14 +98,7 @@ func main() {
 	log.Fatal(tcpServer.ListenAndServe())
 }
 
-func route(w dns.ResponseWriter, req *dns.Msg) {
-	// init redis connection
-	redisClient := redis.NewClient(&redis.Options{
-		Addr:     config.Redis.Host,
-		Password: config.Redis.Password,
-		DB:       0,
-	})
-
+func route(w dns.ResponseWriter, req *dns.Msg, redisClient *redis.Client) {
 	proxy(config.Upstreamdns.Server, w, req, redisClient)
 }
 
