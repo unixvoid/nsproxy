@@ -42,6 +42,7 @@ entries.
     (`application/x-www-form-urlencoded`) to nsproxy with the following data.
     - `hostname`:  the hostname of the box  
     - `cluster`:  the intended cluster to join.  
+    - `ip`(optional):  ip (usefull when client is behind proxy/loadbalancer).  
   - Both of these fields are required.  
 - A regular client registration looks like this:  
     `curl -d hostname=nginx -d cluster=coreos unixvoid.com:8080`  This will add the host `nginx` to the cluster `coreos`.  These names are arbitrary and can be anything.  

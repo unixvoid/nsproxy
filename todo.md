@@ -9,7 +9,7 @@ DONE- api handler to view:
   - hosts
   - clusters
   - hosts in a cluster (clusterspec)
-- add ip field when registering (in case host is behind proxy/nsproxy picksup the wrong ip)
+DONE- add ip field when registering (in case host is behind proxy/nsproxy picksup the wrong ip)
 - impliment redis handler that throws exception when no redis connection
 
 type reference
