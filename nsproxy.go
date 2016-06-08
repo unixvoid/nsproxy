@@ -225,6 +225,9 @@ func asyncClusterListener() {
 	router.HandleFunc("/dns/rm", func(w http.ResponseWriter, r *http.Request) {
 		dnsRmHandler(w, r, redisClient)
 	}).Methods("POST")
+	router.HandleFunc("/clusterspec", func(w http.ResponseWriter, r *http.Request) {
+		apiClusterSpecHandler(w, r, redisClient)
+	}).Methods("POST")
 	router.HandleFunc("/hosts", func(w http.ResponseWriter, r *http.Request) {
 		apiHostsHandler(w, r, redisClient)
 	}).Methods("GET")
@@ -338,6 +341,24 @@ func apiClustersHandler(w http.ResponseWriter, r *http.Request, redisClient *red
 		s := strings.SplitN(i, ":", 2)
 		// toss them all into a tmp redis set
 		redisClient.SAdd("tmp:cluster:index", s[0])
+	}
+	// grab the set and delete
+	clusters, _ := redisClient.SInter("tmp:cluster:index").Result()
+	redisClient.Del("tmp:cluster:index")
+	fmt.Fprintln(w, clusters)
+}
+
+func apiClusterSpecHandler(w http.ResponseWriter, r *http.Request, redisClient *redis.Client) {
+	queryCluster := strings.TrimSpace(r.FormValue("cluster"))
+	hosts, _ := redisClient.SInter("index:live").Result()
+
+	for _, i := range hosts {
+		// we now break at ':' and save the clusters piece
+		s := strings.SplitN(i, ":", 2)
+		if s[0] == queryCluster {
+			// if the custer matches the query, throw the host in a tmp set
+			redisClient.SAdd("tmp:cluster:index", s[1])
+		}
 	}
 	// grab the set and delete
 	clusters, _ := redisClient.SInter("tmp:cluster:index").Result()
