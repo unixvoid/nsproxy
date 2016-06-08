@@ -28,7 +28,9 @@ entries.
 - On boot nsproxy will bind to two ports:  
   - `8053` is used as the regular dns server.  This will act the same as any other dns server and allows for custom dns entries to be used.  
   - `8080` is used as the cluster manager.  Clients should post to this port to bind with the dns server.  
-- For now adding custom dns is being reworked and should be considered WIP. The only way to add custom entries is to add them in redis.  Redis stores the keys in the following format.  
+- DNS entries can be added in a similar fashion to registering a host.  A POST on the same port that the clustermanager is running on in the following format will add an entry to the dns server.  
+  - `/dns` dnstype= domain= value=  
+    - example `curl -d dnstype=a domain=unixvoid.com value=192.168.1.80 localhost:8080/dns`  
   - `dns:<dns_type>:<fqdn>` and the content being a valid A, AAAA, or CNAME entry.  
 - Here are some examples on what typical redis entries would look like.  
   - entry: `dns:a:unixvoid.com.` content: `67.3.192.22`  
@@ -75,3 +77,7 @@ entries.
   - type: redis set
   - content: clusters
   - example `index:master` {coreos, neatCluster, ps2_cluster}
+- `dns:<dns_type>:<domain>` This is the standard dns entry  
+  - type: redis set  
+  - content: a, aaaa, cname entry  
+  - example `dns:a:unixvoid.com.` 192.168.1.80  

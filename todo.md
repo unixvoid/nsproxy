@@ -1,5 +1,14 @@
 TODO
 ------
+DONE- dns entry api
+  - dnstype=
+  - domain=
+  - value=
+- dns remove entry api `/dns/rm`
+- api handler to view:
+  DONE- hosts
+  DONE- clusters
+  - hosts in a cluster (clusterspec)
 - add ip field when registering (in case host is behind proxy/nsproxy picksup the wrong ip)
 - impliment redis handler that throws exception when no redis connection
 

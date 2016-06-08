@@ -213,12 +213,24 @@ func asyncClusterListener() {
 
 	// format the string to be :port
 	port := fmt.Sprint(":", config.Clustermanager.Port)
-
 	glogger.Info.Println("started async cluster listener on port", config.Clustermanager.Port)
+
 	router := mux.NewRouter()
 	router.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
 		clusterHandler(w, r, redisClient)
-	})
+	}).Methods("POST")
+	router.HandleFunc("/dns", func(w http.ResponseWriter, r *http.Request) {
+		dnsHandler(w, r, redisClient)
+	}).Methods("POST")
+	router.HandleFunc("/dns/rm", func(w http.ResponseWriter, r *http.Request) {
+		dnsRmHandler(w, r, redisClient)
+	}).Methods("POST")
+	router.HandleFunc("/hosts", func(w http.ResponseWriter, r *http.Request) {
+		apiHostsHandler(w, r, redisClient)
+	}).Methods("GET")
+	router.HandleFunc("/clusters", func(w http.ResponseWriter, r *http.Request) {
+		apiClustersHandler(w, r, redisClient)
+	}).Methods("GET")
 
 	// check index:master against index:live
 	clusterDiff(redisClient)
@@ -251,6 +263,86 @@ func clusterHandler(w http.ResponseWriter, r *http.Request, redisClient *redis.C
 		// return confirmation header to client
 		w.Header().Set("x-register", "registered")
 	}
+}
+
+func dnsHandler(w http.ResponseWriter, r *http.Request, redisClient *redis.Client) {
+
+	r.ParseForm()
+
+	dnsType := strings.ToLower(strings.TrimSpace(r.FormValue("dnstype")))
+	domain := strings.TrimSpace(r.FormValue("domain"))
+	domainValue := strings.TrimSpace(r.FormValue("value"))
+	if len(dnsType) == 0 {
+		// default to aname entry
+		dnsType = "a"
+	}
+
+	if dnsType == "cname" {
+		// if we are dealing with a CNAME entry fully qualify it
+		if string(domainValue[len(domainValue)-1]) != "." {
+			domainValue = fmt.Sprintf("%s.", domainValue)
+		}
+	}
+
+	// make sure domain and value are set
+	if (len(domain) == 0) || (len(domainValue) == 0) {
+		glogger.Debug.Println("domain or value not set, exiting..")
+	} else {
+		// fully qualify the domain name if it is not already:
+		if string(domain[len(domain)-1]) != "." {
+			domain = fmt.Sprintf("%s.", domain)
+		}
+
+		glogger.Debug.Printf("adding domain entry: dns:%s:%s :: %s", dnsType, domain, domainValue)
+
+		// add dns entry dns:<dns_type>:<domain> <domain_value>
+		redisClient.Set(fmt.Sprintf("dns:%s:%s", dnsType, domain), domainValue, 0).Err()
+
+		// return confirmation header to client
+		w.Header().Set("x-register", "registered")
+	}
+}
+func dnsRmHandler(w http.ResponseWriter, r *http.Request, redisClient *redis.Client) {
+	r.ParseForm()
+
+	rmType := strings.ToLower(strings.TrimSpace(r.FormValue("dnstype")))
+	rmDomain := strings.TrimSpace(r.FormValue("domain"))
+
+	// fully qualify domain if not done already
+	if string(rmDomain[len(rmDomain)-1]) != "." {
+		rmDomain = fmt.Sprintf("%s.", rmDomain)
+	}
+
+	if len(rmType) == 0 {
+		// if type not set, nix them all
+		glogger.Debug.Printf("removing all dns types for %s", rmDomain)
+		redisClient.Del(fmt.Sprintf("dns:a:%s", rmDomain))
+		redisClient.Del(fmt.Sprintf("dns:aaaa:%s", rmDomain))
+		redisClient.Del(fmt.Sprintf("dns:cname:%s", rmDomain))
+	} else {
+		// just remove the specific type
+		glogger.Debug.Printf("removing %s entry for %s", rmType, rmDomain)
+		redisClient.Del(fmt.Sprintf("dns:%s:%s", rmType, rmDomain))
+	}
+}
+
+func apiHostsHandler(w http.ResponseWriter, r *http.Request, redisClient *redis.Client) {
+	hosts, _ := redisClient.SInter("index:live").Result()
+	fmt.Fprintln(w, hosts)
+}
+
+func apiClustersHandler(w http.ResponseWriter, r *http.Request, redisClient *redis.Client) {
+	hosts, _ := redisClient.SInter("index:live").Result()
+	for _, i := range hosts {
+		// we now break at ':' and save the clusters piece
+		s := strings.SplitN(i, ":", 2)
+		// toss them all into a tmp redis set
+		redisClient.SAdd("tmp:cluster:index", s[0])
+	}
+	// grab the set and delete
+	clusters, _ := redisClient.SInter("tmp:cluster:index").Result()
+	redisClient.Del("tmp:cluster:index")
+	fmt.Fprintln(w, clusters)
 }
 
 func spawnClusterManager(cluster, hostname, ip string, redisClient *redis.Client) {

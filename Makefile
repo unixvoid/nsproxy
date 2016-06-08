@@ -7,8 +7,9 @@ all: nsproxy
 nsproxy: nsproxy.go
 	$(GOC) nsproxy.go
 
-run: nsproxy.go
-	go run nsproxy.go
+run:
+	make stat
+	sudo ./nsproxy
 
 stage: nsproxy.go
 	make stat
