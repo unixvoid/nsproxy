@@ -246,6 +246,13 @@ func clusterHandler(w http.ResponseWriter, r *http.Request, redisClient *redis.C
 	r.ParseForm()
 	hostname := strings.TrimSpace(r.FormValue("hostname"))
 	cluster := strings.TrimSpace(r.FormValue("cluster"))
+	hostIp := strings.TrimSpace(r.FormValue("ip"))
+
+	// use parsed ip if it is set
+	if len(hostIp) != 0 {
+		ip = hostIp
+	}
+
 	// make sure hostname and cluster are set
 	if (len(hostname) == 0) || (len(cluster) == 0) {
 		glogger.Debug.Println("hostame or cluster not set, exiting..")
