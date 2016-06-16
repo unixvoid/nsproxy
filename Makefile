@@ -1,6 +1,7 @@
 GOC=go build
 GOFLAGS=-a -ldflags '-s'
 CGOR=CGO_ENABLED=0
+IMAGE_NAME=nsproxy
 
 all: nsproxy
 
@@ -18,6 +19,17 @@ stage: nsproxy.go
 
 stat: nsproxy.go
 	$(CGOR) $(GOC) $(GOFLAGS) nsproxy.go
+
+docker:
+	$(MAKE) stat
+	mkdir stage.tmp/
+	cp nsproxy stage.tmp/
+	cp deps/rootfs.tar.gz stage.tmp/
+	cp deps/Dockerfile stage.tmp/
+	cp deps/run.sh stage.tmp/
+	cp config.gcfg stage.tmp/
+	cd stage.tmp/ && \
+		sudo docker build -t $(IMAGE_NAME) .
 
 install: stat
 	cp nsproxy /usr/bin/
@@ -50,5 +62,6 @@ test:
 clean:
 	rm -f nsproxy
 	rm -f builddeps/nsproxy
+	rm -rf stage.tmp/
 
 #CGO_ENABLED=0 go build -a -ldflags '-s' nsproxy.go
