@@ -2,6 +2,8 @@ GOC=go build
 GOFLAGS=-a -ldflags '-s'
 CGOR=CGO_ENABLED=0
 IMAGE_NAME=nsproxy
+DOCKER_DNS_LISTEN_PORT=53
+DOCKER_API_LISTEN_PORT=8080
 
 all: nsproxy
 
@@ -11,6 +13,15 @@ nsproxy: nsproxy.go
 run:
 	make stat
 	sudo ./nsproxy
+
+rundocker:
+	sudo docker run \
+			-d \
+			-p $(DOCKER_DNS_LISTEN_PORT):53 \
+			-p $(DOCKER_API_LISTEN_PORT):8080 \
+			--name nsproxy \
+			-v /home/capa/nsproxydata/:/redisbackup/:rw \
+			nsproxy
 
 stage: nsproxy.go
 	make stat
@@ -26,6 +37,7 @@ docker:
 	cp nsproxy stage.tmp/
 	cp deps/rootfs.tar.gz stage.tmp/
 	cp deps/Dockerfile stage.tmp/
+	chmod +x deps/run.sh
 	cp deps/run.sh stage.tmp/
 	cp config.gcfg stage.tmp/
 	cd stage.tmp/ && \
