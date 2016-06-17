@@ -4,6 +4,7 @@ CGOR=CGO_ENABLED=0
 IMAGE_NAME=nsproxy
 DOCKER_DNS_LISTEN_PORT=53
 DOCKER_API_LISTEN_PORT=8080
+REDIS_DB_HOST_DIR=/tmp/
 
 all: nsproxy
 
@@ -20,7 +21,7 @@ rundocker:
 			-p $(DOCKER_DNS_LISTEN_PORT):53 \
 			-p $(DOCKER_API_LISTEN_PORT):8080 \
 			--name nsproxy \
-			-v /home/capa/nsproxydata/:/redisbackup/:rw \
+			-v $(REDIS_DB_HOST_DIR):/redisbackup/:rw \
 			nsproxy
 
 stage: nsproxy.go
