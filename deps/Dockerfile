@@ -1,4 +1,4 @@
-FROM alpine
+FROM scratch
 
 ADD rootfs.tar.gz /
 COPY config.gcfg /
