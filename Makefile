@@ -1,7 +1,7 @@
 GOC=go build
 GOFLAGS=-a -ldflags '-s'
 CGOR=CGO_ENABLED=0
-IMAGE_NAME=nsproxy
+IMAGE_NAME=mfaltys/unixvoid:nsproxy
 DOCKER_DNS_LISTEN_PORT=53
 DOCKER_API_LISTEN_PORT=8080
 REDIS_DB_HOST_DIR=/tmp/
@@ -59,6 +59,11 @@ deps:
 	go get github.com/miekg/dns
 	go get gopkg.in/redis.v3
 	go get github.com/tatsushid/go-fastping
+
+populate:
+	curl -d dnstype=A -d domain=unixvoid.com. -d value=1.2.3.4 localhost:8080/dns
+	curl -d dnstype=CNAME -d domain=unixvoid.com. -d value=turbo.lb.unixvoid.com localhost:8080/dns
+	curl -d dnstype=AAAA -d domain=unixvoid.com. -d value=a111::a222:a333:a444:a555 localhost:8080/dns
 
 test:
 	@echo "----------------------------------------------------------------------"
