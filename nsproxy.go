@@ -136,7 +136,7 @@ func proxy(addr string, w dns.ResponseWriter, req *dns.Msg, redisClient *redis.C
 		resp, _, err := c.Exchange(req, addr)
 
 		if err != nil {
-			glogger.Error.Println(err)
+			glogger.Debug.Println(err)
 			dns.HandleFailed(w, req)
 			return
 		}
