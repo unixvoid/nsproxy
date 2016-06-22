@@ -1,10 +1,11 @@
 GOC=go build
 GOFLAGS=-a -ldflags '-s'
 CGOR=CGO_ENABLED=0
-IMAGE_NAME=mfaltys/unixvoid:nsproxy
+IMAGE_NAME=nsproxy
 DOCKER_DNS_LISTEN_PORT=53
 DOCKER_API_LISTEN_PORT=8080
 REDIS_DB_HOST_DIR=/tmp/
+DOCKER_OPTIONS="--no-cache"
 
 all: nsproxy
 
@@ -16,13 +17,16 @@ run:
 	sudo ./nsproxy
 
 rundocker:
+	sudo docker rm nsproxy
 	sudo docker run \
 			-d \
-			-p $(DOCKER_DNS_LISTEN_PORT):53 \
-			-p $(DOCKER_API_LISTEN_PORT):8080 \
+			-p $(DOCKER_DNS_LISTEN_PORT):53/tcp \
+			-p $(DOCKER_DNS_LISTEN_PORT):53/udp \
+			-p $(DOCKER_API_LISTEN_PORT):8080/tcp \
 			--name nsproxy \
 			-v $(REDIS_DB_HOST_DIR):/redisbackup/:rw \
 			nsproxy
+	sudo docker logs -f nsproxy
 
 stage: nsproxy.go
 	make stat
@@ -42,7 +46,8 @@ docker:
 	cp deps/run.sh stage.tmp/
 	cp config.gcfg stage.tmp/
 	cd stage.tmp/ && \
-		sudo docker build -t $(IMAGE_NAME) .
+		sudo docker build $(DOCKER_OPTIONS) -t $(IMAGE_NAME) .
+	@echo "$(IMAGE_NAME) built"
 
 install: stat
 	cp nsproxy /usr/bin/

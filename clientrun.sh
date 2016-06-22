@@ -7,8 +7,8 @@
 echo "$1 nsproxy_master" >> /etc/hosts
 SERVER_IP=nsproxy_master
 SERVER_PORT=8080
-APP_NAME=testapp1
-CLUSTER_NAME=smartos
+APP_NAME=$2
+CLUSTER_NAME=$3
 
 curl -d hostname=$APP_NAME -d cluster=$CLUSTER_NAME $SERVER_IP:$SERVER_PORT
 
