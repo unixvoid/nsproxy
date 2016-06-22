@@ -112,3 +112,6 @@ entries.
   - type: redis set  
   - content: a, aaaa, cname entry  
   - example `dns:a:unixvoid.com.` 192.168.1.80  
+
+### license
+- nsproxy is distributed under the MIT license.  See LICENSE for details.
