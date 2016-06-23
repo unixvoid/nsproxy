@@ -104,11 +104,13 @@ func route(w dns.ResponseWriter, req *dns.Msg, redisClient *redis.Client) {
 
 func proxy(addr string, w dns.ResponseWriter, req *dns.Msg, redisClient *redis.Client) {
 	hostname := req.Question[0].Name
-	if strings.Contains(hostname, "cluster:") {
+	if strings.Contains(hostname, "cluster-") {
 		// it is a cluster entry, forward the request to the dns cluster handler
 		// remove the FQDM '.' from end of 'hostname'
 		fqdnHostname := hostname
-		hostname := strings.Replace(hostname, ".", "", -1)
+		// redo syntax to be cluster:
+		hostname := strings.Replace(hostname, "-", ":", 1)
+		hostname = strings.Replace(hostname, ".", "", -1)
 
 		// grab the first item in the list
 		firstEntry, _ := redisClient.LIndex(fmt.Sprintf("list:%s", hostname), 0).Result()
