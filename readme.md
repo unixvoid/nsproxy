@@ -15,6 +15,7 @@ entries.
   - `useclustermanager:`  whether or not to use the cluster manager. acceptable fields are 'true' and 'false'  
   - `port:`  the port that cluster manager will listen on (this is what port clients use to check in)  
   - `pingfeq:`  the ammout of time in between health checks (in seconds)  
+  - `clientpingtype:`  the type of ping to be used. acceptable fields are 'icmp' and 'port'.  If port is set, client must send 'port' field in cluster registration.  
 - `[dns]`
   - `ttl:`  the default time to live (in seconds) for dns entries  
 - `[upstreamdns]`
@@ -43,6 +44,8 @@ entries.
     - `hostname`:  the hostname of the box  
     - `cluster`:  the intended cluster to join.  
     - `ip`(optional):  ip (usefull when client is behind proxy/loadbalancer).  
+    - `port`(optional): port to tcp health check on, must be set if
+      clientpingtype = port.  
   - Both of these fields are required.  
 - A regular client registration looks like this:  
     `curl -d hostname=nginx -d cluster=coreos unixvoid.com:8080`  This will add the host `nginx` to the cluster `coreos`.  These names are arbitrary and can be anything.  
@@ -92,6 +95,10 @@ entries.
   - type: redis key
     - content: host ip
     - example `cluster:coreos:nginx` 192.168.2.2
+- `port:<cluster_name>:<host_name>` This is a low level entry that has a hostname's port
+  - type: redis key
+    - content: host port
+    - example `port:coreos:nginx` 443
 - `index:cluster:<cluster_name>` This is a medium level entry that contains the elements (hosts) that are in a cluster
   - type: redis set
   - content: cluster hosts

@@ -6,6 +6,7 @@
 	useclustermanager	= true
 	port			= 8080
 	pingfreq		= 4
+	clientpingtype		= "port"
 
 [dns]
 	ttl				= 60

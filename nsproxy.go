@@ -27,6 +27,7 @@ type Config struct {
 		UseClusterManager bool
 		Port              int
 		PingFreq          time.Duration
+		ClientPingType    string
 	}
 	Dns struct {
 		Ttl uint32
@@ -283,7 +284,7 @@ func clusterHandler(w http.ResponseWriter, r *http.Request, redisClient *redis.C
 		redisClient.SAdd("index:master", fmt.Sprintf("%s:%s", cluster, hostname))
 
 		// add port if it is set
-		if len(hostPort) != 0 {
+		if len(hostPort) != 0 && config.Clustermanager.ClientPingType == "port" {
 			redisClient.Set(fmt.Sprintf("port:%s:%s", cluster, hostname), hostPort, 0).Err()
 		}
 
@@ -403,7 +404,12 @@ func apiHostSpecHandler(w http.ResponseWriter, r *http.Request, redisClient *red
 }
 
 func spawnClusterManager(cluster, hostname, ip, port string, redisClient *redis.Client) {
-	glogger.Cluster.Printf("spawning async cluster manager for %s:%s", cluster, hostname)
+	if config.Clustermanager.ClientPingType == "port" {
+		glogger.Cluster.Printf("spawning async cluster manager for %s:%s on port %s", cluster, hostname, port)
+	} else {
+		glogger.Cluster.Printf("spawning async cluster manager for %s:%s", cluster, hostname)
+	}
+
 	online := true
 	for online {
 		//if nsmanager.PingHost(ip) {
@@ -420,6 +426,9 @@ func spawnClusterManager(cluster, hostname, ip, port string, redisClient *redis.
 	glogger.Cluster.Printf("closing %s:%s listener", cluster, hostname)
 	// remove the server entry, it is no longer online
 	redisClient.Del(fmt.Sprintf("cluster:%s:%s", cluster, hostname))
+
+	// remove the port entry, it is no longer online
+	redisClient.Del(fmt.Sprintf("port:%s:%s", cluster, hostname))
 
 	// remove the index entry, it is no longer in the cluster
 	redisClient.SRem(fmt.Sprintf("index:cluster:%s", cluster), hostname)

@@ -64,7 +64,7 @@ func HealthCheck(hostIp, hostPort string) bool {
 	conn, err := net.DialTimeout("tcp", hostIp+":"+hostPort, timeout)
 	if err != nil {
 		// port unreachable
-		fmt.Println(err)
+		//fmt.Println(err)
 		return false
 	} else {
 		conn.Close()

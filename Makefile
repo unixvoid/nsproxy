@@ -73,6 +73,14 @@ populate:
 testhealthcheck:
 	./deps/runpod.sh
 
+rmhealthcheck:
+	sudo docker stop testapp0
+	sudo docker stop testapp1
+	sudo docker stop testapp2
+	sudo docker rm testapp0
+	sudo docker rm testapp1
+	sudo docker rm testapp2
+
 test:
 	@echo "----------------------------------------------------------------------"
 	dig +noall +question +answer @localhost -p 8053 unixvoid.com.
