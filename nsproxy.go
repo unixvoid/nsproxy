@@ -261,6 +261,7 @@ func clusterHandler(w http.ResponseWriter, r *http.Request, redisClient *redis.C
 	hostname := strings.TrimSpace(r.FormValue("hostname"))
 	cluster := strings.TrimSpace(r.FormValue("cluster"))
 	hostIp := strings.TrimSpace(r.FormValue("ip"))
+	hostPort := strings.TrimSpace(r.FormValue("port"))
 
 	// use parsed ip if it is set
 	if len(hostIp) != 0 {
@@ -280,6 +281,11 @@ func clusterHandler(w http.ResponseWriter, r *http.Request, redisClient *redis.C
 		redisClient.SAdd(fmt.Sprintf("index:cluster:%s", cluster), hostname)
 		syncList(cluster, redisClient)
 		redisClient.SAdd("index:master", fmt.Sprintf("%s:%s", cluster, hostname))
+
+		// add port if it is set
+		if len(hostPort) != 0 {
+			redisClient.Set(fmt.Sprintf("port:%s:%s", cluster, hostname), hostPort, 0).Err()
+		}
 
 		// diff index:master and index:live to find/register the new live host
 		clusterDiff(redisClient)
@@ -396,12 +402,12 @@ func apiHostSpecHandler(w http.ResponseWriter, r *http.Request, redisClient *red
 	fmt.Fprintln(w, ip)
 }
 
-func spawnClusterManager(cluster, hostname, ip string, redisClient *redis.Client) {
+func spawnClusterManager(cluster, hostname, ip, port string, redisClient *redis.Client) {
 	glogger.Cluster.Printf("spawning async cluster manager for %s:%s", cluster, hostname)
 	online := true
 	for online {
 		//if nsmanager.PingHost(ip) {
-		if nsmanager.HealthCheck(ip) {
+		if nsmanager.HealthCheck(ip, port) {
 			glogger.Debug.Printf("- %s:%s online", cluster, hostname)
 		} else {
 			glogger.Debug.Printf("- %s:%s offline", cluster, hostname)
@@ -436,8 +442,9 @@ func clusterDiff(redisClient *redis.Client) {
 		s := strings.SplitN(b, ":", 2)
 		cluster, hostname := s[0], s[1]
 		ip, _ := redisClient.Get(fmt.Sprintf("cluster:%s:%s", cluster, hostname)).Result()
+		port, _ := redisClient.Get(fmt.Sprintf("port:%s:%s", cluster, hostname)).Result()
 		// spawn cluster manager for host
-		go spawnClusterManager(cluster, hostname, ip, redisClient)
+		go spawnClusterManager(cluster, hostname, ip, port, redisClient)
 		// add host to live entry now
 		redisClient.SAdd("index:live", fmt.Sprintf("%s:%s", cluster, hostname))
 	}
