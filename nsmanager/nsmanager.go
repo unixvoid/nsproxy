@@ -56,3 +56,19 @@ func PingHost(hostIp string) bool {
 		return false
 	}
 }
+
+func HealthCheck(hostIp string) bool {
+	// TODO make this configurable
+	hostPort := "443"
+
+	timeout := time.Duration(2) * time.Second
+	conn, err := net.DialTimeout("tcp", hostIp+":"+hostPort, timeout)
+	if err != nil {
+		// port unreachable
+		fmt.Println(err)
+		return false
+	} else {
+		conn.Close()
+		return true
+	}
+}

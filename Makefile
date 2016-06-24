@@ -70,6 +70,9 @@ populate:
 	curl -d dnstype=CNAME -d domain=unixvoid.com. -d value=turbo.lb.unixvoid.com localhost:8080/dns
 	curl -d dnstype=AAAA -d domain=unixvoid.com. -d value=a111::a222:a333:a444:a555 localhost:8080/dns
 
+testhealthcheck:
+	./deps/runpod.sh
+
 test:
 	@echo "----------------------------------------------------------------------"
 	dig +noall +question +answer @localhost -p 8053 unixvoid.com.
