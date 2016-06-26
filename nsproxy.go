@@ -413,10 +413,11 @@ func spawnClusterManager(cluster, hostname, ip, port string, redisClient *redis.
 	online := true
 	for online {
 		//if nsmanager.PingHost(ip) {
-		if nsmanager.HealthCheck(ip, port) {
+		healthCheck, err := nsmanager.HealthCheck(ip, port)
+		if healthCheck {
 			glogger.Debug.Printf("- %s:%s online", cluster, hostname)
 		} else {
-			glogger.Debug.Printf("- %s:%s offline", cluster, hostname)
+			glogger.Debug.Printf("- %s:%s offline: error %s", cluster, hostname, err)
 			online = false
 			break
 		}

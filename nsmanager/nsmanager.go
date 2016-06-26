@@ -57,7 +57,7 @@ func PingHost(hostIp string) bool {
 	}
 }
 
-func HealthCheck(hostIp, hostPort string) bool {
+func HealthCheck(hostIp, hostPort string) (bool, error) {
 	// TODO make this configurable
 
 	timeout := time.Duration(2) * time.Second
@@ -65,9 +65,9 @@ func HealthCheck(hostIp, hostPort string) bool {
 	if err != nil {
 		// port unreachable
 		//fmt.Println(err)
-		return false
+		return false, err
 	} else {
 		conn.Close()
-		return true
+		return true, nil
 	}
 }
