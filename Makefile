@@ -17,7 +17,6 @@ run:
 	sudo ./nsproxy
 
 rundocker:
-	sudo docker rm nsproxy
 	sudo docker run \
 			-d \
 			-p $(DOCKER_DNS_LISTEN_PORT):53/tcp \
@@ -25,7 +24,7 @@ rundocker:
 			-p $(DOCKER_API_LISTEN_PORT):8080/tcp \
 			--name nsproxy \
 			-v $(REDIS_DB_HOST_DIR):/redisbackup/:rw \
-			nsproxy
+			$(IMAGE_NAME)
 	sudo docker logs -f nsproxy
 
 stage: nsproxy.go
