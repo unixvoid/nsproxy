@@ -16,6 +16,7 @@ entries.
   - `port:`  the port that cluster manager will listen on (this is what port clients use to check in)  
   - `pingfeq:`  the ammout of time in between health checks (in seconds)  
   - `clientpingtype:`  the type of ping to be used. acceptable fields are 'icmp' and 'port'.  If port is set, client must send 'port' field in cluster registration.  
+  - `connectiondrain:`  the time in seconds for the connection to drain. this is a grace period between a bad health check and actually removing the host from rotation. set to 0 if this is uneeded.  
 - `[dns]`
   - `ttl:`  the default time to live (in seconds) for dns entries  
 - `[upstreamdns]`
