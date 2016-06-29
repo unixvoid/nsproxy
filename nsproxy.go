@@ -434,7 +434,6 @@ func spawnClusterManager(cluster, hostname, ip, port string, redisClient *redis.
 				glogger.Cluster.Printf("%s:%s listener draining", cluster, hostname)
 			}
 			connectionDrain = connectionDrain - int(config.Clustermanager.PingFreq)
-			glogger.Cluster.Println(connectionDrain)
 		}
 		// time between host pings
 		time.Sleep(time.Second * config.Clustermanager.PingFreq)
