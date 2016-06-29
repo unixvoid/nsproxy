@@ -1,11 +1,12 @@
 GOC=go build
 GOFLAGS=-a -ldflags '-s'
 CGOR=CGO_ENABLED=0
-IMAGE_NAME=nsproxy
+IMAGE_NAME=mfaltys/nsproxy
 DOCKER_DNS_LISTEN_PORT=53
 DOCKER_API_LISTEN_PORT=8080
 REDIS_DB_HOST_DIR=/tmp/
 DOCKER_OPTIONS="--no-cache"
+HOST_IP=192.168.2.201
 
 all: nsproxy
 
@@ -70,7 +71,10 @@ populate:
 	curl -d dnstype=AAAA -d domain=unixvoid.com. -d value=a111::a222:a333:a444:a555 localhost:8080/dns
 
 testhealthcheck:
-	./deps/runpod.sh
+	./deps/runpod.sh $(HOST_IP)
+
+testhealthcheckoneshot:
+	./deps/runpodoneshot.sh $(HOST_IP)
 
 rmhealthcheck:
 	sudo docker stop testapp0
@@ -79,6 +83,10 @@ rmhealthcheck:
 	sudo docker rm testapp0
 	sudo docker rm testapp1
 	sudo docker rm testapp2
+
+rmhealthcheckoneshot:
+	sudo docker stop testapp0
+	sudo docker rm testapp0
 
 test:
 	@echo "----------------------------------------------------------------------"

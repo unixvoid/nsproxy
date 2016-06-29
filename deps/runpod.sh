@@ -6,7 +6,7 @@ sudo docker run \
 	-e APP_PORT=4410 \
 	-e CLUSTER_NAME=testapp \
 	--name=testapp0 \
-	mfaltys/pod:4 demoapp 192.168.1.9
+	mfaltys/pod:4 demoapp $1
 
 sudo docker run \
 	-d \
@@ -14,7 +14,7 @@ sudo docker run \
 	-e APP_PORT=4411 \
 	-e CLUSTER_NAME=testapp \
 	--name=testapp1 \
-	mfaltys/pod:4 demoapp 192.168.1.9
+	mfaltys/pod:4 demoapp $1
 
 sudo docker run \
 	-d \
@@ -22,4 +22,4 @@ sudo docker run \
 	-e APP_PORT=4412 \
 	-e CLUSTER_NAME=testapp \
 	--name=testapp2 \
-	mfaltys/pod:4 demoapp 192.168.1.9
+	mfaltys/pod:4 demoapp $1
