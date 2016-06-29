@@ -28,6 +28,7 @@ type Config struct {
 		Port              int
 		PingFreq          time.Duration
 		ClientPingType    string
+		ConnectionDrain   int
 	}
 	Dns struct {
 		Ttl uint32
@@ -333,6 +334,7 @@ func dnsHandler(w http.ResponseWriter, r *http.Request, redisClient *redis.Clien
 		w.Header().Set("x-register", "registered")
 	}
 }
+
 func dnsRmHandler(w http.ResponseWriter, r *http.Request, redisClient *redis.Client) {
 	r.ParseForm()
 
@@ -404,6 +406,10 @@ func apiHostSpecHandler(w http.ResponseWriter, r *http.Request, redisClient *red
 }
 
 func spawnClusterManager(cluster, hostname, ip, port string, redisClient *redis.Client) {
+	// add in a connection drain redis entry cluster:<cluster_name>:<hostname> <drain time>
+	//redisClient.Set(fmt.Sprintf("drain:%s:%s", cluster, hostname), config.Clustermanager.ConnectionDrain, 0).Err()
+	connectionDrain := config.Clustermanager.ConnectionDrain
+
 	if config.Clustermanager.ClientPingType == "port" {
 		glogger.Cluster.Printf("spawning async cluster manager for %s:%s on port %s", cluster, hostname, port)
 	} else {
@@ -412,14 +418,23 @@ func spawnClusterManager(cluster, hostname, ip, port string, redisClient *redis.
 
 	online := true
 	for online {
+		// TODO add logic for ICMP ping
 		//if nsmanager.PingHost(ip) {
 		healthCheck, err := nsmanager.HealthCheck(ip, port)
 		if healthCheck {
 			glogger.Debug.Printf("- %s:%s online", cluster, hostname)
 		} else {
-			glogger.Debug.Printf("- %s:%s offline: error %s", cluster, hostname, err)
-			online = false
-			break
+			if connectionDrain < (0 + int(config.Clustermanager.PingFreq)) {
+				glogger.Debug.Printf("- %s:%s offline: error %s", cluster, hostname, err)
+				online = false
+				break
+			}
+			// print draining message if first shot
+			if connectionDrain == config.Clustermanager.ConnectionDrain {
+				glogger.Cluster.Printf("%s:%s listener draining", cluster, hostname)
+			}
+			connectionDrain = connectionDrain - int(config.Clustermanager.PingFreq)
+			glogger.Cluster.Println(connectionDrain)
 		}
 		// time between host pings
 		time.Sleep(time.Second * config.Clustermanager.PingFreq)
