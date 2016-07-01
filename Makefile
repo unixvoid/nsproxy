@@ -1,7 +1,7 @@
 GOC=go build
 GOFLAGS=-a -ldflags '-s'
 CGOR=CGO_ENABLED=0
-IMAGE_NAME=mfaltys/nsproxy
+IMAGE_NAME=docker.io/unixvoid/nsproxy
 DOCKER_DNS_LISTEN_PORT=53
 DOCKER_API_LISTEN_PORT=8080
 REDIS_DB_HOST_DIR=/tmp/
