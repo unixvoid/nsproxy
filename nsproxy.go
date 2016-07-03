@@ -433,11 +433,7 @@ func apiHostSpecHandler(w http.ResponseWriter, r *http.Request, redisClient *red
 
 func spawnClusterManager(cluster, hostname, ip, port string, redisClient *redis.Client) {
 	// add in a connection drain redis entry cluster:<cluster_name>:<hostname> <drain time>
-	//redisClient.Set(fmt.Sprintf("drain:%s:%s", cluster, hostname), config.Clustermanager.ConnectionDrain, 0).Err()
 	connectionDrain := config.Clustermanager.ConnectionDrain
-
-	//if config.Clustermanager.ClientPingType == "port" {
-	// port health check logic
 	glogger.Cluster.Printf("spawning async cluster manager for %s:%s on port %s", cluster, hostname, port)
 
 	var healthCheck bool
