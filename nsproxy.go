@@ -273,6 +273,7 @@ func clusterHandler(w http.ResponseWriter, r *http.Request, redisClient *redis.C
 	// make sure hostname and cluster are set
 	if (len(hostname) == 0) || (len(cluster) == 0) {
 		glogger.Debug.Println("hostame or cluster not set, exiting..")
+		w.WriteHeader(http.StatusBadRequest)
 	} else {
 		glogger.Debug.Printf("registing %s:%s :: %s", cluster, hostname, ip)
 
@@ -294,11 +295,11 @@ func clusterHandler(w http.ResponseWriter, r *http.Request, redisClient *redis.C
 
 		// return confirmation header to client
 		w.Header().Set("x-register", "registered")
+		w.WriteHeader(http.StatusOK)
 	}
 }
 
 func dnsHandler(w http.ResponseWriter, r *http.Request, redisClient *redis.Client) {
-
 	r.ParseForm()
 
 	dnsType := strings.ToLower(strings.TrimSpace(r.FormValue("dnstype")))
@@ -319,6 +320,7 @@ func dnsHandler(w http.ResponseWriter, r *http.Request, redisClient *redis.Clien
 	// make sure domain and value are set
 	if (len(domain) == 0) || (len(domainValue) == 0) {
 		glogger.Debug.Println("domain or value not set, exiting..")
+		w.WriteHeader(http.StatusBadRequest)
 	} else {
 		// fully qualify the domain name if it is not already:
 		if string(domain[len(domain)-1]) != "." {
@@ -332,6 +334,7 @@ func dnsHandler(w http.ResponseWriter, r *http.Request, redisClient *redis.Clien
 
 		// return confirmation header to client
 		w.Header().Set("x-register", "registered")
+		w.WriteHeader(http.StatusOK)
 	}
 }
 
@@ -340,6 +343,11 @@ func dnsRmHandler(w http.ResponseWriter, r *http.Request, redisClient *redis.Cli
 
 	rmType := strings.ToLower(strings.TrimSpace(r.FormValue("dnstype")))
 	rmDomain := strings.TrimSpace(r.FormValue("domain"))
+
+	if len(rmDomain) == 0 {
+		glogger.Debug.Println("domain not set, exiting..")
+		w.WriteHeader(http.StatusBadRequest)
+	}
 
 	// fully qualify domain if not done already
 	if string(rmDomain[len(rmDomain)-1]) != "." {
@@ -357,15 +365,22 @@ func dnsRmHandler(w http.ResponseWriter, r *http.Request, redisClient *redis.Cli
 		glogger.Debug.Printf("removing %s entry for %s", rmType, rmDomain)
 		redisClient.Del(fmt.Sprintf("dns:%s:%s", rmType, rmDomain))
 	}
+	w.WriteHeader(http.StatusOK)
 }
 
 func apiHostsHandler(w http.ResponseWriter, r *http.Request, redisClient *redis.Client) {
-	hosts, _ := redisClient.SInter("index:live").Result()
+	hosts, err := redisClient.SInter("index:live").Result()
+	if err != nil {
+		w.WriteHeader(http.StatusBadRequest)
+	}
 	fmt.Fprintln(w, hosts)
 }
 
 func apiClustersHandler(w http.ResponseWriter, r *http.Request, redisClient *redis.Client) {
-	hosts, _ := redisClient.SInter("index:live").Result()
+	hosts, err := redisClient.SInter("index:live").Result()
+	if err != nil {
+		w.WriteHeader(http.StatusBadRequest)
+	}
 	for _, i := range hosts {
 		// we now break at ':' and save the clusters piece
 		s := strings.SplitN(i, ":", 2)
@@ -373,14 +388,20 @@ func apiClustersHandler(w http.ResponseWriter, r *http.Request, redisClient *red
 		redisClient.SAdd("tmp:cluster:index", s[0])
 	}
 	// grab the set and delete
-	clusters, _ := redisClient.SInter("tmp:cluster:index").Result()
+	clusters, err := redisClient.SInter("tmp:cluster:index").Result()
+	if err != nil {
+		w.WriteHeader(http.StatusBadRequest)
+	}
 	redisClient.Del("tmp:cluster:index")
 	fmt.Fprintln(w, clusters)
 }
 
 func apiClusterSpecHandler(w http.ResponseWriter, r *http.Request, redisClient *redis.Client) {
 	queryCluster := strings.TrimSpace(r.FormValue("cluster"))
-	hosts, _ := redisClient.SInter("index:live").Result()
+	hosts, err := redisClient.SInter("index:live").Result()
+	if err != nil {
+		w.WriteHeader(http.StatusBadRequest)
+	}
 
 	for _, i := range hosts {
 		// we now break at ':' and save the clusters piece
@@ -391,7 +412,10 @@ func apiClusterSpecHandler(w http.ResponseWriter, r *http.Request, redisClient *
 		}
 	}
 	// grab the set and delete
-	clusters, _ := redisClient.SInter("tmp:cluster:index").Result()
+	clusters, err := redisClient.SInter("tmp:cluster:index").Result()
+	if err != nil {
+		w.WriteHeader(http.StatusBadRequest)
+	}
 	redisClient.Del("tmp:cluster:index")
 	fmt.Fprintln(w, clusters)
 }
@@ -400,8 +424,10 @@ func apiHostSpecHandler(w http.ResponseWriter, r *http.Request, redisClient *red
 	cluster := strings.TrimSpace(r.FormValue("cluster"))
 	host := strings.TrimSpace(r.FormValue("host"))
 
-	ip, _ := redisClient.Get(fmt.Sprintf("cluster:%s:%s", cluster, host)).Result()
-
+	ip, err := redisClient.Get(fmt.Sprintf("cluster:%s:%s", cluster, host)).Result()
+	if err != nil {
+		w.WriteHeader(http.StatusBadRequest)
+	}
 	fmt.Fprintln(w, ip)
 }
 
