@@ -436,63 +436,39 @@ func spawnClusterManager(cluster, hostname, ip, port string, redisClient *redis.
 	//redisClient.Set(fmt.Sprintf("drain:%s:%s", cluster, hostname), config.Clustermanager.ConnectionDrain, 0).Err()
 	connectionDrain := config.Clustermanager.ConnectionDrain
 
-	if config.Clustermanager.ClientPingType == "port" {
-		// port health check logic
-		glogger.Cluster.Printf("spawning async cluster manager for %s:%s on port %s", cluster, hostname, port)
+	//if config.Clustermanager.ClientPingType == "port" {
+	// port health check logic
+	glogger.Cluster.Printf("spawning async cluster manager for %s:%s on port %s", cluster, hostname, port)
 
-		online := true
-		for online {
-			healthCheck, err := nsmanager.HealthCheck(ip, port)
-			if healthCheck {
-				glogger.Debug.Printf("- %s:%s online", cluster, hostname)
-				// reset connection drain
-				if connectionDrain != config.Clustermanager.ConnectionDrain {
-					glogger.Cluster.Printf("%s:%s listener draining reset", cluster, hostname)
-					connectionDrain = config.Clustermanager.ConnectionDrain
-				}
-			} else {
-				if connectionDrain < (0 + int(config.Clustermanager.PingFreq)) {
-					glogger.Debug.Printf("- %s:%s offline: error %s", cluster, hostname, err)
-					online = false
-					break
-				}
-				// print draining message if first shot
-				if connectionDrain == config.Clustermanager.ConnectionDrain {
-					glogger.Cluster.Printf("%s:%s listener draining", cluster, hostname)
-				}
-				connectionDrain = connectionDrain - int(config.Clustermanager.PingFreq)
-			}
-			// time between host pings
-			time.Sleep(time.Second * config.Clustermanager.PingFreq)
+	var healthCheck bool
+	online := true
+	for online {
+		if config.Clustermanager.ClientPingType == "port" {
+			healthCheck, _ = nsmanager.HealthCheck(ip, port)
+		} else {
+			healthCheck = nsmanager.PingHost(ip)
 		}
-	} else {
-		// ICMP health check logic
-		glogger.Cluster.Printf("spawning async cluster manager for %s:%s", cluster, hostname)
-
-		online := true
-		for online {
-			if nsmanager.PingHost(ip) {
-				glogger.Debug.Printf("- %s:%s online", cluster, hostname)
-				// reset connection drain
-				if connectionDrain != config.Clustermanager.ConnectionDrain {
-					glogger.Cluster.Printf("%s:%s listener draining reset", cluster, hostname)
-					connectionDrain = config.Clustermanager.ConnectionDrain
-				}
-			} else {
-				if connectionDrain < (0 + int(config.Clustermanager.PingFreq)) {
-					glogger.Debug.Printf("- %s:%s offline", cluster, hostname)
-					online = false
-					break
-				}
-				// print draining message if first shot
-				if connectionDrain == config.Clustermanager.ConnectionDrain {
-					glogger.Cluster.Printf("%s:%s listener draining", cluster, hostname)
-				}
-				connectionDrain = connectionDrain - int(config.Clustermanager.PingFreq)
+		if healthCheck {
+			glogger.Debug.Printf("- %s:%s online", cluster, hostname)
+			// reset connection drain
+			if connectionDrain != config.Clustermanager.ConnectionDrain {
+				glogger.Cluster.Printf("%s:%s listener draining reset", cluster, hostname)
+				connectionDrain = config.Clustermanager.ConnectionDrain
 			}
-			// time between host pings
-			time.Sleep(time.Second * config.Clustermanager.PingFreq)
+		} else {
+			if connectionDrain < (0 + int(config.Clustermanager.PingFreq)) {
+				glogger.Debug.Printf("- %s:%s offline", cluster, hostname)
+				online = false
+				break
+			}
+			// print draining message if first shot
+			if connectionDrain == config.Clustermanager.ConnectionDrain {
+				glogger.Cluster.Printf("%s:%s listener draining", cluster, hostname)
+			}
+			connectionDrain = connectionDrain - int(config.Clustermanager.PingFreq)
 		}
+		// time between host pings
+		time.Sleep(time.Second * config.Clustermanager.PingFreq)
 	}
 
 	glogger.Cluster.Printf("closing %s:%s listener", cluster, hostname)
