@@ -437,33 +437,64 @@ func spawnClusterManager(cluster, hostname, ip, port string, redisClient *redis.
 	connectionDrain := config.Clustermanager.ConnectionDrain
 
 	if config.Clustermanager.ClientPingType == "port" {
+		// port health check logic
 		glogger.Cluster.Printf("spawning async cluster manager for %s:%s on port %s", cluster, hostname, port)
+
+		online := true
+		for online {
+			healthCheck, err := nsmanager.HealthCheck(ip, port)
+			if healthCheck {
+				glogger.Debug.Printf("- %s:%s online", cluster, hostname)
+				// reset connection drain
+				if connectionDrain != config.Clustermanager.ConnectionDrain {
+					glogger.Cluster.Printf("%s:%s listener draining reset", cluster, hostname)
+					connectionDrain = config.Clustermanager.ConnectionDrain
+				}
+			} else {
+				if connectionDrain < (0 + int(config.Clustermanager.PingFreq)) {
+					glogger.Debug.Printf("- %s:%s offline: error %s", cluster, hostname, err)
+					online = false
+					break
+				}
+				// print draining message if first shot
+				if connectionDrain == config.Clustermanager.ConnectionDrain {
+					glogger.Cluster.Printf("%s:%s listener draining", cluster, hostname)
+				}
+				connectionDrain = connectionDrain - int(config.Clustermanager.PingFreq)
+			}
+			// time between host pings
+			time.Sleep(time.Second * config.Clustermanager.PingFreq)
+		}
 	} else {
+		// ICMP health check logic
 		glogger.Cluster.Printf("spawning async cluster manager for %s:%s", cluster, hostname)
+
+		online := true
+		for online {
+			if nsmanager.PingHost(ip) {
+				glogger.Debug.Printf("- %s:%s online", cluster, hostname)
+				// reset connection drain
+				if connectionDrain != config.Clustermanager.ConnectionDrain {
+					glogger.Cluster.Printf("%s:%s listener draining reset", cluster, hostname)
+					connectionDrain = config.Clustermanager.ConnectionDrain
+				}
+			} else {
+				if connectionDrain < (0 + int(config.Clustermanager.PingFreq)) {
+					glogger.Debug.Printf("- %s:%s offline", cluster, hostname)
+					online = false
+					break
+				}
+				// print draining message if first shot
+				if connectionDrain == config.Clustermanager.ConnectionDrain {
+					glogger.Cluster.Printf("%s:%s listener draining", cluster, hostname)
+				}
+				connectionDrain = connectionDrain - int(config.Clustermanager.PingFreq)
+			}
+			// time between host pings
+			time.Sleep(time.Second * config.Clustermanager.PingFreq)
+		}
 	}
 
-	online := true
-	for online {
-		// TODO add logic for ICMP ping
-		//if nsmanager.PingHost(ip) {
-		healthCheck, err := nsmanager.HealthCheck(ip, port)
-		if healthCheck {
-			glogger.Debug.Printf("- %s:%s online", cluster, hostname)
-		} else {
-			if connectionDrain < (0 + int(config.Clustermanager.PingFreq)) {
-				glogger.Debug.Printf("- %s:%s offline: error %s", cluster, hostname, err)
-				online = false
-				break
-			}
-			// print draining message if first shot
-			if connectionDrain == config.Clustermanager.ConnectionDrain {
-				glogger.Cluster.Printf("%s:%s listener draining", cluster, hostname)
-			}
-			connectionDrain = connectionDrain - int(config.Clustermanager.PingFreq)
-		}
-		// time between host pings
-		time.Sleep(time.Second * config.Clustermanager.PingFreq)
-	}
 	glogger.Cluster.Printf("closing %s:%s listener", cluster, hostname)
 	// remove the server entry, it is no longer online
 	redisClient.Del(fmt.Sprintf("cluster:%s:%s", cluster, hostname))
