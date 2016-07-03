@@ -12,9 +12,9 @@ import (
 	"strings"
 	"time"
 
-	"git.unixvoid.com/mfaltys/glogger"
-	"git.unixvoid.com/mfaltys/nsproxy/nsmanager"
 	"github.com/miekg/dns"
+	"github.com/unixvoid/glogger"
+	"github.com/unixvoid/nsproxy/nsmanager"
 	"gopkg.in/redis.v3"
 )
 

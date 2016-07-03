@@ -1,12 +1,12 @@
 GOC=go build
 GOFLAGS=-a -ldflags '-s'
 CGOR=CGO_ENABLED=0
-IMAGE_NAME=docker.io/unixvoid/nsproxy
+IMAGE_NAME=docker.io/unixvoid/nsproxy:develop
 DOCKER_DNS_LISTEN_PORT=53
 DOCKER_API_LISTEN_PORT=8080
 REDIS_DB_HOST_DIR=/tmp/
 DOCKER_OPTIONS="--no-cache"
-HOST_IP=192.168.2.201
+HOST_IP=192.168.1.9
 
 all: nsproxy
 
@@ -53,14 +53,14 @@ install: stat
 	cp nsproxy /usr/bin/
 
 link:
-	mkdir -p $(GOPATH)/src/git.unixvoid.com/mfaltys/
-	ln -s $(shell pwd) $(GOPATH)/src/git.unixvoid.com/mfaltys/
+	mkdir -p $(GOPATH)/src/github.com/unixvoid/
+	ln -s $(shell pwd) $(GOPATH)/src/github.com/unixvoid/
 
 deps:
 	go get github.com/gorilla/mux
 	go get gopkg.in/gcfg.v1
-	go get git.unixvoid.com/mfaltys/glogger
-	go get git.unixvoid.com/mfaltys/nsproxy/nsmanager
+	go get github.com/unixvoid/glogger
+	go get github.com/unixvoid/nsproxy/nsmanager
 	go get github.com/miekg/dns
 	go get gopkg.in/redis.v3
 	go get github.com/tatsushid/go-fastping
