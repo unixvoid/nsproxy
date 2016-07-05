@@ -13,8 +13,8 @@ import (
 	"time"
 
 	"github.com/miekg/dns"
-	"github.com/unixvoid/glogger"
-	"github.com/unixvoid/nsproxy/nsmanager"
+	"github.com/unixvoid/nsproxy/pkg/nslog"
+	"github.com/unixvoid/nsproxy/pkg/nsmanager"
 	"gopkg.in/redis.v3"
 )
 
@@ -56,13 +56,13 @@ func main() {
 
 	// init logger
 	if config.Server.Loglevel == "debug" {
-		glogger.LogInit(os.Stdout, os.Stdout, os.Stdout, os.Stderr)
+		nslog.LogInit(os.Stdout, os.Stdout, os.Stdout, os.Stderr)
 	} else if config.Server.Loglevel == "cluster" {
-		glogger.LogInit(os.Stdout, os.Stdout, ioutil.Discard, os.Stderr)
+		nslog.LogInit(os.Stdout, os.Stdout, ioutil.Discard, os.Stderr)
 	} else if config.Server.Loglevel == "info" {
-		glogger.LogInit(os.Stdout, ioutil.Discard, ioutil.Discard, os.Stderr)
+		nslog.LogInit(os.Stdout, ioutil.Discard, ioutil.Discard, os.Stderr)
 	} else {
-		glogger.LogInit(ioutil.Discard, ioutil.Discard, ioutil.Discard, os.Stderr)
+		nslog.LogInit(ioutil.Discard, ioutil.Discard, ioutil.Discard, os.Stderr)
 	}
 
 	// init redis connection
@@ -74,10 +74,10 @@ func main() {
 
 	_, redisErr := redisClient.Ping().Result()
 	if redisErr != nil {
-		glogger.Error.Println("redis connection cannot be made.")
-		glogger.Error.Println("nsproxy will continue to function in passthrough mode only")
+		nslog.Error.Println("redis connection cannot be made.")
+		nslog.Error.Println("nsproxy will continue to function in passthrough mode only")
 	} else {
-		glogger.Debug.Println("connection to redis succeeded.")
+		nslog.Debug.Println("connection to redis succeeded.")
 		if config.Clustermanager.UseClusterManager {
 			// start async cluster listener
 			go asyncClusterListener()
@@ -89,7 +89,7 @@ func main() {
 
 	udpServer := &dns.Server{Addr: port, Net: "udp"}
 	tcpServer := &dns.Server{Addr: port, Net: "tcp"}
-	glogger.Info.Println("started server on", config.Server.Port)
+	nslog.Info.Println("started server on", config.Server.Port)
 	dns.HandleFunc(".", func(w dns.ResponseWriter, req *dns.Msg) {
 		route(w, req, redisClient)
 	})
@@ -124,7 +124,7 @@ func proxy(addr string, w dns.ResponseWriter, req *dns.Msg, redisClient *redis.C
 		rep.SetReply(req)
 		rep.Answer = append(rep.Answer, customRR)
 
-		glogger.Debug.Println("serving", hostname, "from local record")
+		nslog.Debug.Println("serving", hostname, "from local record")
 		w.WriteMsg(rep)
 
 		// pop the list and add the entry to the end, it just got lb'd
@@ -140,7 +140,7 @@ func proxy(addr string, w dns.ResponseWriter, req *dns.Msg, redisClient *redis.C
 		resp, _, err := c.Exchange(req, addr)
 
 		if err != nil {
-			glogger.Debug.Println(err)
+			nslog.Debug.Println(err)
 			dns.HandleFailed(w, req)
 			return
 		}
@@ -183,11 +183,11 @@ func mainBuilder(w dns.ResponseWriter, req, resp *dns.Msg, hostname string, redi
 		rep.SetReply(req)
 		rep.Answer = append(rep.Answer, customRR)
 
-		glogger.Debug.Println("serving", hostname, "from local record")
+		nslog.Debug.Println("serving", hostname, "from local record")
 		w.WriteMsg(rep)
 		return
 	}
-	glogger.Debug.Println("serving", hostname, "from", config.Upstreamdns.Server)
+	nslog.Debug.Println("serving", hostname, "from", config.Upstreamdns.Server)
 	w.WriteMsg(resp)
 }
 
@@ -226,7 +226,7 @@ func asyncClusterListener() {
 
 	// format the string to be :port
 	port := fmt.Sprint(":", config.Clustermanager.Port)
-	glogger.Info.Println("started async cluster listener on port", config.Clustermanager.Port)
+	nslog.Info.Println("started async cluster listener on port", config.Clustermanager.Port)
 
 	router := mux.NewRouter()
 	router.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
@@ -272,10 +272,10 @@ func clusterHandler(w http.ResponseWriter, r *http.Request, redisClient *redis.C
 
 	// make sure hostname and cluster are set
 	if (len(hostname) == 0) || (len(cluster) == 0) {
-		glogger.Debug.Println("hostame or cluster not set, exiting..")
+		nslog.Debug.Println("hostame or cluster not set, exiting..")
 		w.WriteHeader(http.StatusBadRequest)
 	} else {
-		glogger.Debug.Printf("registing %s:%s :: %s", cluster, hostname, ip)
+		nslog.Debug.Printf("registing %s:%s :: %s", cluster, hostname, ip)
 
 		// add cluster entry cluster:<cluster_name>:<hostname> <ip>
 		redisClient.Set(fmt.Sprintf("cluster:%s:%s", cluster, hostname), ip, 0).Err()
@@ -319,7 +319,7 @@ func dnsHandler(w http.ResponseWriter, r *http.Request, redisClient *redis.Clien
 
 	// make sure domain and value are set
 	if (len(domain) == 0) || (len(domainValue) == 0) {
-		glogger.Debug.Println("domain or value not set, exiting..")
+		nslog.Debug.Println("domain or value not set, exiting..")
 		w.WriteHeader(http.StatusBadRequest)
 	} else {
 		// fully qualify the domain name if it is not already:
@@ -327,7 +327,7 @@ func dnsHandler(w http.ResponseWriter, r *http.Request, redisClient *redis.Clien
 			domain = fmt.Sprintf("%s.", domain)
 		}
 
-		glogger.Debug.Printf("adding domain entry: dns:%s:%s :: %s", dnsType, domain, domainValue)
+		nslog.Debug.Printf("adding domain entry: dns:%s:%s :: %s", dnsType, domain, domainValue)
 
 		// add dns entry dns:<dns_type>:<domain> <domain_value>
 		redisClient.Set(fmt.Sprintf("dns:%s:%s", dnsType, domain), domainValue, 0).Err()
@@ -345,7 +345,7 @@ func dnsRmHandler(w http.ResponseWriter, r *http.Request, redisClient *redis.Cli
 	rmDomain := strings.TrimSpace(r.FormValue("domain"))
 
 	if len(rmDomain) == 0 {
-		glogger.Debug.Println("domain not set, exiting..")
+		nslog.Debug.Println("domain not set, exiting..")
 		w.WriteHeader(http.StatusBadRequest)
 	}
 
@@ -356,13 +356,13 @@ func dnsRmHandler(w http.ResponseWriter, r *http.Request, redisClient *redis.Cli
 
 	if len(rmType) == 0 {
 		// if type not set, nix them all
-		glogger.Debug.Printf("removing all dns types for %s", rmDomain)
+		nslog.Debug.Printf("removing all dns types for %s", rmDomain)
 		redisClient.Del(fmt.Sprintf("dns:a:%s", rmDomain))
 		redisClient.Del(fmt.Sprintf("dns:aaaa:%s", rmDomain))
 		redisClient.Del(fmt.Sprintf("dns:cname:%s", rmDomain))
 	} else {
 		// just remove the specific type
-		glogger.Debug.Printf("removing %s entry for %s", rmType, rmDomain)
+		nslog.Debug.Printf("removing %s entry for %s", rmType, rmDomain)
 		redisClient.Del(fmt.Sprintf("dns:%s:%s", rmType, rmDomain))
 	}
 	w.WriteHeader(http.StatusOK)
@@ -434,7 +434,7 @@ func apiHostSpecHandler(w http.ResponseWriter, r *http.Request, redisClient *red
 func spawnClusterManager(cluster, hostname, ip, port string, redisClient *redis.Client) {
 	// add in a connection drain redis entry cluster:<cluster_name>:<hostname> <drain time>
 	connectionDrain := config.Clustermanager.ConnectionDrain
-	glogger.Cluster.Printf("spawning async cluster manager for %s:%s on port %s", cluster, hostname, port)
+	nslog.Cluster.Printf("spawning async cluster manager for %s:%s on port %s", cluster, hostname, port)
 
 	var healthCheck bool
 	online := true
@@ -445,21 +445,21 @@ func spawnClusterManager(cluster, hostname, ip, port string, redisClient *redis.
 			healthCheck = nsmanager.PingHost(ip)
 		}
 		if healthCheck {
-			glogger.Debug.Printf("- %s:%s online", cluster, hostname)
+			nslog.Debug.Printf("- %s:%s online", cluster, hostname)
 			// reset connection drain
 			if connectionDrain != config.Clustermanager.ConnectionDrain {
-				glogger.Cluster.Printf("%s:%s listener draining reset", cluster, hostname)
+				nslog.Cluster.Printf("%s:%s listener draining reset", cluster, hostname)
 				connectionDrain = config.Clustermanager.ConnectionDrain
 			}
 		} else {
 			if connectionDrain < (0 + int(config.Clustermanager.PingFreq)) {
-				glogger.Debug.Printf("- %s:%s offline", cluster, hostname)
+				nslog.Debug.Printf("- %s:%s offline", cluster, hostname)
 				online = false
 				break
 			}
 			// print draining message if first shot
 			if connectionDrain == config.Clustermanager.ConnectionDrain {
-				glogger.Cluster.Printf("%s:%s listener draining", cluster, hostname)
+				nslog.Cluster.Printf("%s:%s listener draining", cluster, hostname)
 			}
 			connectionDrain = connectionDrain - int(config.Clustermanager.PingFreq)
 		}
@@ -467,7 +467,7 @@ func spawnClusterManager(cluster, hostname, ip, port string, redisClient *redis.
 		time.Sleep(time.Second * config.Clustermanager.PingFreq)
 	}
 
-	glogger.Cluster.Printf("closing %s:%s listener", cluster, hostname)
+	nslog.Cluster.Printf("closing %s:%s listener", cluster, hostname)
 	// remove the server entry, it is no longer online
 	redisClient.Del(fmt.Sprintf("cluster:%s:%s", cluster, hostname))
 
@@ -486,12 +486,12 @@ func spawnClusterManager(cluster, hostname, ip, port string, redisClient *redis.
 func clusterDiff(redisClient *redis.Client) {
 	// 'sdiff index:master index:live' will return the set of hosts
 	// that do not have listeners currently attached
-	glogger.Debug.Println("diffing cluster")
+	nslog.Debug.Println("diffing cluster")
 	diffString := redisClient.SDiff("index:master", "index:live")
 	tmp, _ := diffString.Result()
 	// for ever entry that is not in index:live
 	for _, b := range tmp {
-		glogger.Debug.Println("found diff for:", b)
+		nslog.Debug.Println("found diff for:", b)
 		s := strings.SplitN(b, ":", 2)
 		cluster, hostname := s[0], s[1]
 		ip, _ := redisClient.Get(fmt.Sprintf("cluster:%s:%s", cluster, hostname)).Result()
@@ -506,7 +506,7 @@ func clusterDiff(redisClient *redis.Client) {
 func syncList(cluster string, redisClient *redis.Client) {
 	// sync a cluster index entry to a list. the redis set is used for speed, and the
 	// redis list (sorted set) is used for load balancer algorithms
-	glogger.Debug.Println("syncing list")
+	nslog.Debug.Println("syncing list")
 	indexString, _ := redisClient.SInter(fmt.Sprintf("index:cluster:%s", cluster)).Result()
 	// populate a tmp list
 	for _, i := range indexString {

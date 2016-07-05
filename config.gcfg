@@ -1,5 +1,5 @@
 [server]
-	port			= 53
+	port			= 8053
 	loglevel		= "cluster"
 
 [clustermanager]
