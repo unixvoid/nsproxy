@@ -2,8 +2,6 @@ package main
 
 import (
 	"fmt"
-	"github.com/gorilla/mux"
-	"gopkg.in/gcfg.v1"
 	"io/ioutil"
 	"log"
 	"net"
@@ -12,9 +10,11 @@ import (
 	"strings"
 	"time"
 
+	"github.com/gorilla/mux"
 	"github.com/miekg/dns"
 	"github.com/unixvoid/nsproxy/pkg/nslog"
 	"github.com/unixvoid/nsproxy/pkg/nsmanager"
+	"gopkg.in/gcfg.v1"
 	"gopkg.in/redis.v3"
 )
 
@@ -124,6 +124,11 @@ func proxy(addr string, w dns.ResponseWriter, req *dns.Msg, redisClient *redis.C
 		rep.SetReply(req)
 		rep.Answer = append(rep.Answer, customRR)
 
+		// if we dont have an entry, pop a NXDOMAIN error
+		if len(firstEntry) == 0 {
+			rep.Rcode = dns.RcodeNameError
+		}
+
 		nslog.Debug.Println("serving", hostname, "from local record")
 		w.WriteMsg(rep)
 
@@ -186,9 +191,11 @@ func mainBuilder(w dns.ResponseWriter, req, resp *dns.Msg, hostname string, redi
 		nslog.Debug.Println("serving", hostname, "from local record")
 		w.WriteMsg(rep)
 		return
+	} else {
+		// domain does not exist, return dns error
+		nslog.Debug.Println("serving", hostname, "from", config.Upstreamdns.Server)
+		w.WriteMsg(resp)
 	}
-	nslog.Debug.Println("serving", hostname, "from", config.Upstreamdns.Server)
-	w.WriteMsg(resp)
 }
 
 func aBuilder(hostname, lookup string) *dns.A {
