@@ -1,20 +1,20 @@
 [server]
-	port			= 8053
-	loglevel		= "cluster"
+	port				= 53
+	loglevel			= "cluster"
 
 [clustermanager]
 	useclustermanager	= true
-	port			= 8080
-	pingfreq		= 4
+	port				= 8080
+	pingfreq			= 4
 	clientpingtype		= "port"
 	connectiondrain		= 10
 
 [dns]
-	ttl			= 60
+	ttl					= 60
 
 [upstreamdns]
-	server			= "8.8.8.8:53"
+	server				= "8.8.8.8:53"
 
 [redis]
-	host			= "localhost:6379"
-	password		= ""
+	host				= "localhost:6379"
+	password			= ""

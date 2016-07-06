@@ -1,7 +1,7 @@
 GOC=go build
 GOFLAGS=-a -ldflags '-s'
 CGOR=CGO_ENABLED=0
-IMAGE_NAME=docker.io/unixvoid/nsproxy:develop
+IMAGE_NAME=nsproxy
 DOCKER_DNS_LISTEN_PORT=53
 DOCKER_API_LISTEN_PORT=8080
 REDIS_DB_HOST_DIR=/tmp/
@@ -10,12 +10,11 @@ HOST_IP=192.168.1.9
 
 all: nsproxy
 
-nsproxy: nsproxy.go
+nsproxy:
 	$(GOC) nsproxy.go
 
 run:
-	make stat
-	sudo ./nsproxy
+	go run nsproxy/*.go
 
 rundocker:
 	sudo docker run \
@@ -28,13 +27,14 @@ rundocker:
 			$(IMAGE_NAME)
 	sudo docker logs -f nsproxy
 
-stage: nsproxy.go
+stage:
 	make stat
 	make statremote
 	mv nsproxy builddeps/
 
-stat: nsproxy.go
-	$(CGOR) $(GOC) $(GOFLAGS) nsproxy.go
+stat:
+	mkdir -p bin/
+	$(CGOR) $(GOC) $(GOFLAGS) -o bin/nsproxy nsproxy/*.go
 
 docker:
 	$(MAKE) stat
@@ -101,7 +101,7 @@ test:
 	@echo "testing complete"
 
 clean:
-	rm -f nsproxy
+	rm -rf bin/
 	rm -f builddeps/nsproxy
 	rm -rf stage.tmp/
 
