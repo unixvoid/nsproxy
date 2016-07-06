@@ -2,6 +2,7 @@ GOC=go build
 GOFLAGS=-a -ldflags '-s'
 CGOR=CGO_ENABLED=0
 IMAGE_NAME=nsproxy
+HOST_LISTEN_PORT=8053
 DOCKER_DNS_LISTEN_PORT=53
 DOCKER_API_LISTEN_PORT=8080
 REDIS_DB_HOST_DIR=/tmp/
@@ -88,6 +89,17 @@ rmhealthcheck:
 rmhealthcheckoneshot:
 	sudo docker stop testapp0
 	sudo docker rm testapp0
+
+testdns:
+	dig +noall +answer @localhost -p $(HOST_LISTEN_PORT) cluster-testapp
+	dig +noall +answer @localhost -p $(HOST_LISTEN_PORT) cluster-testapp
+	dig +noall +answer @localhost -p $(HOST_LISTEN_PORT) cluster-testapp
+	dig +noall +answer @localhost -p $(HOST_LISTEN_PORT) cluster-testapp
+	dig +noall +answer @localhost -p $(HOST_LISTEN_PORT) cluster-testapp
+	dig +noall +answer @localhost -p $(HOST_LISTEN_PORT) cluster-testapp
+	dig +noall +answer @localhost -p $(HOST_LISTEN_PORT) cluster-testapp
+	dig +noall +answer @localhost -p $(HOST_LISTEN_PORT) cluster-testapp
+	dig +noall +answer @localhost -p $(HOST_LISTEN_PORT) cluster-testapp
 
 test:
 	@echo "----------------------------------------------------------------------"
