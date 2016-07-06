@@ -12,7 +12,11 @@ import (
 func spawnClusterManager(cluster, hostname, ip, port string, redisClient *redis.Client) {
 	// add in a connection drain redis entry cluster:<cluster_name>:<hostname> <drain time>
 	connectionDrain := config.Clustermanager.ConnectionDrain
-	nslog.Cluster.Printf("spawning async cluster manager for %s:%s on port %s", cluster, hostname, port)
+	if config.Clustermanager.ClientPingType == "port" {
+		nslog.Cluster.Printf("spawning async cluster manager for %s:%s on port %s", cluster, hostname, port)
+	} else {
+		nslog.Cluster.Printf("spawning async cluster manager for %s:%s", cluster, hostname)
+	}
 
 	var healthCheck bool
 	online := true
