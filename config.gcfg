@@ -1,5 +1,5 @@
 [server]
-	port			= 53
+	port			= 8053
 	loglevel		= "cluster"
 
 [clustermanager]
@@ -7,10 +7,10 @@
 	port			= 8080
 	pingfreq		= 4
 	clientpingtype		= "port"
-	connectiondrain	= 10
+	connectiondrain		= 10
 
 [dns]
-	ttl				= 60
+	ttl			= 60
 
 [upstreamdns]
 	server			= "8.8.8.8:53"

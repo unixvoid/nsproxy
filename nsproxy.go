@@ -7,6 +7,7 @@ import (
 	"net"
 	"net/http"
 	"os"
+	"strconv"
 	"strings"
 	"time"
 
@@ -104,37 +105,55 @@ func route(w dns.ResponseWriter, req *dns.Msg, redisClient *redis.Client) {
 	proxy(config.Upstreamdns.Server, w, req, redisClient)
 }
 
+// TODO make this shit async
 func proxy(addr string, w dns.ResponseWriter, req *dns.Msg, redisClient *redis.Client) {
-	hostname := req.Question[0].Name
-	if strings.Contains(hostname, "cluster-") {
+	clusterString := req.Question[0].Name
+	if strings.Contains(clusterString, "cluster-") {
 		// it is a cluster entry, forward the request to the dns cluster handler
-		// remove the FQDM '.' from end of 'hostname'
-		fqdnHostname := hostname
+		// remove the FQDM '.' from end of 'clusterString'
+		fqdnHostname := clusterString
 		// redo syntax to be cluster:
-		hostname := strings.Replace(hostname, "-", ":", 1)
-		hostname = strings.Replace(hostname, ".", "", -1)
+		clusterString = strings.Replace(clusterString, "-", ":", 1)
+		clusterString = strings.Replace(clusterString, ".", "", -1)
+		s := strings.SplitN(clusterString, ":", 2)
+		clusterName := s[1]
+
+		//s := strings.SplitN(message, " ", 2)
+		//command, content := s[0], s[1]
+		//trimmedPrefix := strings.TrimPrefix(command, config.Lore.Prefix)
 
 		// grab the first item in the list
-		firstEntry, _ := redisClient.LIndex(fmt.Sprintf("list:%s", hostname), 0).Result()
+		hostName, _ := redisClient.LIndex(fmt.Sprintf("list:%s", clusterString), 0).Result()
+		hostIp, _ := nsmanager.ClusterQuery(clusterString, hostName, redisClient)
+		hostCWeight, _ := redisClient.Get(fmt.Sprintf("cweight:%s:%s", clusterName, hostName)).Result()
+		hostCWeightNum, _ := strconv.Atoi(hostCWeight)
 
 		// return ip to client
-		lookup, _ := nsmanager.ClusterQuery(hostname, firstEntry, redisClient)
+		lookup := hostIp
 		customRR := aBuilder(fqdnHostname, lookup)
 		rep := new(dns.Msg)
 		rep.SetReply(req)
 		rep.Answer = append(rep.Answer, customRR)
 
 		// if we dont have an entry, pop a NXDOMAIN error
-		if len(firstEntry) == 0 {
+		if len(hostIp) == 0 {
 			rep.Rcode = dns.RcodeNameError
 		}
 
-		nslog.Debug.Println("serving", hostname, "from local record")
+		hostCWeightNum = hostCWeightNum - 1
+
+		if hostCWeightNum <= 0 {
+			// pop the list and add the entry to the end, it just got lb'd
+			hostIp, _ = redisClient.LPop(fmt.Sprintf("list:%s", clusterString)).Result()
+			redisClient.RPush(fmt.Sprintf("list:%s", clusterString), hostIp)
+			hostWeight, _ := redisClient.Get(fmt.Sprintf("weight:%s:%s", clusterName, hostName)).Result()
+			hostWeightNum, _ := strconv.Atoi(hostWeight)
+			hostCWeightNum = hostWeightNum
+		}
+		nslog.Debug.Println("serving", clusterString, "from local record")
 		w.WriteMsg(rep)
 
-		// pop the list and add the entry to the end, it just got lb'd
-		firstEntry, _ = redisClient.LPop(fmt.Sprintf("list:%s", hostname)).Result()
-		redisClient.RPush(fmt.Sprintf("list:%s", hostname), firstEntry)
+		redisClient.Set(fmt.Sprintf("cweight:%s:%s", clusterName, hostName), hostCWeightNum, 0).Err()
 	} else {
 
 		transport := "udp"
@@ -151,7 +170,7 @@ func proxy(addr string, w dns.ResponseWriter, req *dns.Msg, redisClient *redis.C
 		}
 
 		// call main builder to craft and send the response
-		mainBuilder(w, req, resp, hostname, redisClient)
+		mainBuilder(w, req, resp, clusterString, redisClient)
 	}
 }
 
@@ -265,12 +284,18 @@ func asyncClusterListener() {
 
 func clusterHandler(w http.ResponseWriter, r *http.Request, redisClient *redis.Client) {
 	ip := strings.Split(r.RemoteAddr, ":")[0]
+	var hostWeight string
 
 	r.ParseForm()
 	hostname := strings.TrimSpace(r.FormValue("hostname"))
 	cluster := strings.TrimSpace(r.FormValue("cluster"))
 	hostIp := strings.TrimSpace(r.FormValue("ip"))
 	hostPort := strings.TrimSpace(r.FormValue("port"))
+	if len(strings.TrimSpace(r.FormValue("weight"))) == 0 {
+		hostWeight = "1"
+	} else {
+		hostWeight = strings.TrimSpace(r.FormValue("weight"))
+	}
 
 	// use parsed ip if it is set
 	if len(hostIp) != 0 {
@@ -286,6 +311,10 @@ func clusterHandler(w http.ResponseWriter, r *http.Request, redisClient *redis.C
 
 		// add cluster entry cluster:<cluster_name>:<hostname> <ip>
 		redisClient.Set(fmt.Sprintf("cluster:%s:%s", cluster, hostname), ip, 0).Err()
+
+		// add weight to client
+		redisClient.Set(fmt.Sprintf("weight:%s:%s", cluster, hostname), hostWeight, 0).Err()
+		redisClient.Set(fmt.Sprintf("cweight:%s:%s", cluster, hostname), hostWeight, 0).Err()
 
 		// add to index if it does not exist index:cluster:<cluster_name> <host_name>
 		redisClient.SAdd(fmt.Sprintf("index:cluster:%s", cluster), hostname)
@@ -477,6 +506,10 @@ func spawnClusterManager(cluster, hostname, ip, port string, redisClient *redis.
 	nslog.Cluster.Printf("closing %s:%s listener", cluster, hostname)
 	// remove the server entry, it is no longer online
 	redisClient.Del(fmt.Sprintf("cluster:%s:%s", cluster, hostname))
+
+	// remove the weight entries, it is no longer online
+	redisClient.Del(fmt.Sprintf("weight:%s:%s", cluster, hostname))
+	redisClient.Del(fmt.Sprintf("cweight:%s:%s", cluster, hostname))
 
 	// remove the port entry, it is no longer online
 	redisClient.Del(fmt.Sprintf("port:%s:%s", cluster, hostname))
