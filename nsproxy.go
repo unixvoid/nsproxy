@@ -112,15 +112,13 @@ func proxy(addr string, w dns.ResponseWriter, req *dns.Msg, redisClient *redis.C
 		// it is a cluster entry, forward the request to the dns cluster handler
 		// remove the FQDM '.' from end of 'clusterString'
 		fqdnHostname := clusterString
-		// redo syntax to be cluster:
+		// redo syntax to be cluster:<cluster>
 		clusterString = strings.Replace(clusterString, "-", ":", 1)
 		clusterString = strings.Replace(clusterString, ".", "", -1)
+
+		// parse out 'cluster:'
 		s := strings.SplitN(clusterString, ":", 2)
 		clusterName := s[1]
-
-		//s := strings.SplitN(message, " ", 2)
-		//command, content := s[0], s[1]
-		//trimmedPrefix := strings.TrimPrefix(command, config.Lore.Prefix)
 
 		// grab the first item in the list
 		hostName, _ := redisClient.LIndex(fmt.Sprintf("list:%s", clusterString), 0).Result()
@@ -149,6 +147,7 @@ func proxy(addr string, w dns.ResponseWriter, req *dns.Msg, redisClient *redis.C
 			hostWeight, _ := redisClient.Get(fmt.Sprintf("weight:%s:%s", clusterName, hostName)).Result()
 			hostWeightNum, _ := strconv.Atoi(hostWeight)
 			hostCWeightNum = hostWeightNum
+			nslog.Debug.Println("resetting host weight")
 		}
 		nslog.Debug.Println("serving", clusterString, "from local record")
 		w.WriteMsg(rep)
@@ -481,7 +480,7 @@ func spawnClusterManager(cluster, hostname, ip, port string, redisClient *redis.
 			healthCheck = nsmanager.PingHost(ip)
 		}
 		if healthCheck {
-			nslog.Debug.Printf("- %s:%s online", cluster, hostname)
+			//nslog.Debug.Printf("- %s:%s online", cluster, hostname)
 			// reset connection drain
 			if connectionDrain != config.Clustermanager.ConnectionDrain {
 				nslog.Cluster.Printf("%s:%s listener draining reset", cluster, hostname)
