@@ -11,7 +11,7 @@ HOST_IP=192.168.1.9
 all: nsproxy
 
 nsproxy:
-	$(GOC) nsproxy.go
+	$(GOC) nsproxy/*.go
 
 run:
 	go run nsproxy/*.go
@@ -29,8 +29,8 @@ rundocker:
 
 stage:
 	make stat
-	make statremote
-	mv nsproxy builddeps/
+	mkdir -p stage.tmp/
+	mv bin/nsproxy stage.tmp/
 
 stat:
 	mkdir -p bin/
@@ -39,7 +39,7 @@ stat:
 docker:
 	$(MAKE) stat
 	mkdir stage.tmp/
-	cp nsproxy stage.tmp/
+	cp bin/nsproxy stage.tmp/
 	cp deps/rootfs.tar.gz stage.tmp/
 	cp deps/Dockerfile stage.tmp/
 	chmod +x deps/run.sh
