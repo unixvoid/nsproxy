@@ -42,6 +42,9 @@ func dnsHandler(w http.ResponseWriter, r *http.Request, redisClient *redis.Clien
 		// add dns entry dns:<dns_type>:<domain> <domain_value>
 		redisClient.Set(fmt.Sprintf("dns:%s:%s", dnsType, domain), domainValue, 0).Err()
 
+		// add dns entry to the list of custom dns names
+		redisClient.SAdd("index:dns", fmt.Sprintf("%s:%s", dnsType, domain))
+
 		// return confirmation header to client
 		w.Header().Set("x-register", "registered")
 		w.WriteHeader(http.StatusOK)
@@ -70,16 +73,32 @@ func dnsRmHandler(w http.ResponseWriter, r *http.Request, redisClient *redis.Cli
 		redisClient.Del(fmt.Sprintf("dns:a:%s", rmDomain))
 		redisClient.Del(fmt.Sprintf("dns:aaaa:%s", rmDomain))
 		redisClient.Del(fmt.Sprintf("dns:cname:%s", rmDomain))
+
+		// remove dns entry from the custom list
+		redisClient.SRem("index:dns", fmt.Sprintf("a:%s", rmDomain))
+		redisClient.SRem("index:dns", fmt.Sprintf("aaaa:%s", rmDomain))
+		redisClient.SRem("index:dns", fmt.Sprintf("cname:%s", rmDomain))
 	} else {
 		// just remove the specific type
 		nslog.Debug.Printf("removing %s entry for %s", rmType, rmDomain)
 		redisClient.Del(fmt.Sprintf("dns:%s:%s", rmType, rmDomain))
+
+		// remove dns entry from the custom list
+		redisClient.SRem("index:dns", fmt.Sprintf("%s:%s", rmType, rmDomain))
 	}
 	w.WriteHeader(http.StatusOK)
 }
 
 func apiHostsHandler(w http.ResponseWriter, r *http.Request, redisClient *redis.Client) {
 	hosts, err := redisClient.SInter("index:live").Result()
+	if err != nil {
+		w.WriteHeader(http.StatusBadRequest)
+	}
+	fmt.Fprintln(w, hosts)
+}
+
+func dnsHostsHandler(w http.ResponseWriter, r *http.Request, redisClient *redis.Client) {
+	hosts, err := redisClient.SInter("index:dns").Result()
 	if err != nil {
 		w.WriteHeader(http.StatusBadRequest)
 	}
@@ -138,5 +157,27 @@ func apiHostSpecHandler(w http.ResponseWriter, r *http.Request, redisClient *red
 	if err != nil {
 		w.WriteHeader(http.StatusBadRequest)
 	}
+	fmt.Fprintln(w, ip)
+}
+
+func apiDnsSpecHandler(w http.ResponseWriter, r *http.Request, redisClient *redis.Client) {
+	dnsType := strings.TrimSpace(r.FormValue("dnstype"))
+	domainValue := strings.TrimSpace(r.FormValue("domain"))
+
+	// fully qualify if not already
+	if string(domainValue[len(domainValue)-1]) != "." {
+		domainValue = fmt.Sprintf("%s.", domainValue)
+	}
+
+	// default to a record
+	if len(dnsType) == 0 {
+		dnsType = "a"
+	}
+
+	ip, err := redisClient.Get(fmt.Sprintf("dns:%s:%s", dnsType, domainValue)).Result()
+	if err != nil {
+		w.WriteHeader(http.StatusNotFound)
+	}
+
 	fmt.Fprintln(w, ip)
 }

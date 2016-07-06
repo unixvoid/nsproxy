@@ -31,6 +31,9 @@ func asyncClusterListener() {
 	router.HandleFunc("/dns", func(w http.ResponseWriter, r *http.Request) {
 		dnsHandler(w, r, redisClient)
 	}).Methods("POST")
+	router.HandleFunc("/dns", func(w http.ResponseWriter, r *http.Request) {
+		dnsHostsHandler(w, r, redisClient)
+	}).Methods("GET")
 	router.HandleFunc("/dns/rm", func(w http.ResponseWriter, r *http.Request) {
 		dnsRmHandler(w, r, redisClient)
 	}).Methods("POST")
@@ -39,6 +42,9 @@ func asyncClusterListener() {
 	}).Methods("POST")
 	router.HandleFunc("/hostspec", func(w http.ResponseWriter, r *http.Request) {
 		apiHostSpecHandler(w, r, redisClient)
+	}).Methods("POST")
+	router.HandleFunc("/dnsspec", func(w http.ResponseWriter, r *http.Request) {
+		apiDnsSpecHandler(w, r, redisClient)
 	}).Methods("POST")
 	router.HandleFunc("/hosts", func(w http.ResponseWriter, r *http.Request) {
 		apiHostsHandler(w, r, redisClient)
