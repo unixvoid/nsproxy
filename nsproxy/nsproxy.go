@@ -100,10 +100,10 @@ func main() {
 }
 
 func route(w dns.ResponseWriter, req *dns.Msg, redisClient *redis.Client) {
-	proxy(config.Upstreamdns.Server, w, req, redisClient)
+	// async run proxy task
+	go proxy(config.Upstreamdns.Server, w, req, redisClient)
 }
 
-// TODO make this shit async
 func proxy(addr string, w dns.ResponseWriter, req *dns.Msg, redisClient *redis.Client) {
 	clusterString := req.Question[0].Name
 	if strings.Contains(clusterString, "cluster-") {
