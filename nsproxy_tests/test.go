@@ -58,7 +58,11 @@ func main() {
 		glogger.Error.Println("\x1b[31;1mError detected.. Goodluck and godspeed\x1b[0m")
 	} else {
 		glogger.Info.Println("")
-		glogger.Info.Println("\x1b[36;1mAll tests passed, its beertime!\x1b[0m")
+		glogger.Info.Println("\x1b[36m ___ ___ ___ ___ ___ _ _ _ _ \x1b[39m")
+		glogger.Info.Println("\x1b[36m|   |_ -| . |  _| . |_'_| | |\x1b[39m")
+		glogger.Info.Println("\x1b[36m|_|_|___|  _|_| |___|_._|_  |\x1b[39m")
+		glogger.Info.Println("\x1b[36m        |_|             |___|\x1b[39m")
+		glogger.Info.Println("\x1b[34mAll tests passed, its beertime!\x1b[39m")
 	}
 }
 
