@@ -15,23 +15,35 @@ func dnsHandler(w http.ResponseWriter, r *http.Request, redisClient *redis.Clien
 	dnsType := strings.ToLower(strings.TrimSpace(r.FormValue("dnstype")))
 	domain := strings.TrimSpace(r.FormValue("domain"))
 	domainValue := strings.TrimSpace(r.FormValue("value"))
-	if len(dnsType) == 0 {
-		// default to aname entry
-		dnsType = "a"
-	}
-
-	if dnsType == "cname" {
-		// if we are dealing with a CNAME entry fully qualify it
-		if string(domainValue[len(domainValue)-1]) != "." {
-			domainValue = fmt.Sprintf("%s.", domainValue)
-		}
-	}
 
 	// make sure domain and value are set
 	if (len(domain) == 0) || (len(domainValue) == 0) {
 		nslog.Debug.Println("domain or value not set, exiting..")
 		w.WriteHeader(http.StatusBadRequest)
 	} else {
+		if len(dnsType) == 0 {
+			// default to aname entry
+			dnsType = "a"
+		} else {
+			// if dnstype is set, make sure it is something we support
+			switch dnsType {
+			case
+				"a",
+				"aaaa",
+				"cname":
+				break
+			default:
+				nslog.Debug.Printf("unsupported dnstype '%s', exiting..\n", dnsType)
+				w.WriteHeader(http.StatusBadRequest)
+				return
+			}
+		}
+		if dnsType == "cname" {
+			// if we are dealing with a CNAME entry fully qualify it
+			if string(domainValue[len(domainValue)-1]) != "." {
+				domainValue = fmt.Sprintf("%s.", domainValue)
+			}
+		}
 		// fully qualify the domain name if it is not already:
 		if string(domain[len(domain)-1]) != "." {
 			domain = fmt.Sprintf("%s.", domain)
@@ -60,6 +72,7 @@ func dnsRmHandler(w http.ResponseWriter, r *http.Request, redisClient *redis.Cli
 	if len(rmDomain) == 0 {
 		nslog.Debug.Println("domain not set, exiting..")
 		w.WriteHeader(http.StatusBadRequest)
+		return
 	}
 
 	// fully qualify domain if not done already
