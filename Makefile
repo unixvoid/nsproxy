@@ -68,7 +68,7 @@ dependencies:
 	go get github.com/gorilla/mux
 	go get gopkg.in/gcfg.v1
 	go get github.com/unixvoid/glogger
-	go get github.com/unixvoid/nsproxy/nsmanager
+	go get github.com/unixvoid/nsproxy/pkg/nsmanager
 	go get github.com/miekg/dns
 	go get gopkg.in/redis.v3
 	go get github.com/tatsushid/go-fastping
