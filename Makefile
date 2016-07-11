@@ -17,6 +17,9 @@ nsproxy:
 run:
 	go run nsproxy/*.go
 
+test:
+	go run nsproxy_tests/*.go
+
 rundocker:
 	sudo docker run \
 			-d \
@@ -101,7 +104,7 @@ testdns:
 	dig +noall +answer @localhost -p $(HOST_LISTEN_PORT) cluster-testapp
 	dig +noall +answer @localhost -p $(HOST_LISTEN_PORT) cluster-testapp
 
-test:
+testdig:
 	@echo "----------------------------------------------------------------------"
 	dig +noall +question +answer @localhost -p 8053 unixvoid.com.
 	@echo "----------------------------------------------------------------------"
