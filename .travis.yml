@@ -4,6 +4,9 @@ sudo: required
 go:
   - 1.5.1
 
+services:
+  - redis-server
+
 install:
   - make dependencies
 
