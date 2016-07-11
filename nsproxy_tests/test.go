@@ -12,6 +12,10 @@ import (
 	"github.com/unixvoid/glogger"
 )
 
+var (
+	responseErr bool
+)
+
 func main() {
 	// parse flags
 	logLevel := flag.String("loglevel", "debug", "Level of logging {'debug', 'info', 'cluster', 'error'}")
@@ -47,6 +51,15 @@ func main() {
 	glogger.Info.Println("====================== test_dns_remove.go ===================")
 	testDnsRemove(hostUrl)
 	glogger.Info.Println("====================== endpoint completed ===================")
+
+	// show if any errors were thrown
+	if responseErr {
+		glogger.Info.Println("")
+		glogger.Error.Println("\x1b[31;1mError detected.. Goodluck and godspeed\x1b[0m")
+	} else {
+		glogger.Info.Println("")
+		glogger.Info.Println("\x1b[36;1mAll tests passed, its beertime!\x1b[0m")
+	}
 }
 
 func twoKeyPostEndpoint(hostUrl, endpoint, firstKey, firstValue, secondKey, secondValue string) int {
@@ -105,6 +118,7 @@ func checkResponse(prefix string, wantedResponse, respCode int) {
 		glogger.Info.Printf("%s :: Test passed, got %v", prefix, respCode)
 	} else {
 		glogger.Error.Printf("%s :: Expected %v, got %v", prefix, wantedResponse, respCode)
+		responseErr = true
 	}
 }
 
