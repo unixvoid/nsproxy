@@ -10,7 +10,7 @@ func testDnsAdd(hostUrl *string) {
 	glogger.Info.Println("Testing :: POST to /dns A type")
 	// correct
 	returnVal := twoKeyPostEndpoint(*hostUrl, "/dns", "domain", "test.domain", "value", "127.0.0.1")
-	checkResponse("Correct", 201, returnVal)
+	checkResponse("Correct", 200, returnVal)
 	// domain not set
 	returnVal = twoKeyPostEndpoint(*hostUrl, "/dns", "", "test.domain", "value", "127.0.0.1")
 	checkResponse("Domain not set", 400, returnVal)
