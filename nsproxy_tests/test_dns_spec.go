@@ -33,5 +33,4 @@ func testDnsSpec(hostUrl *string) {
 	body, returnVal = twoKeyPostReturnEndpoint(*hostUrl, "/dnsspec", "domain", "test.domain", "dnstype", "a")
 	checkResponse("Correct", 200, returnVal)
 	glogger.Info.Printf("/dnsspec GET reponds: %s", body)
-	glogger.Info.Println("")
 }

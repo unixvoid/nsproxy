@@ -47,7 +47,6 @@ func main() {
 	glogger.Info.Println("====================== test_dns_remove.go ===================")
 	testDnsRemove(hostUrl)
 	glogger.Info.Println("====================== endpoint completed ===================")
-	glogger.Info.Println("")
 }
 
 func twoKeyPostEndpoint(hostUrl, endpoint, firstKey, firstValue, secondKey, secondValue string) int {
