@@ -64,7 +64,7 @@ link:
 	mkdir -p $(GOPATH)/src/github.com/unixvoid/
 	ln -s $(shell pwd) $(GOPATH)/src/github.com/unixvoid/
 
-deps:
+dependencies:
 	go get github.com/gorilla/mux
 	go get gopkg.in/gcfg.v1
 	go get github.com/unixvoid/glogger
