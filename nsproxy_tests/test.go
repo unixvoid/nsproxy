@@ -39,6 +39,11 @@ func main() {
 	glogger.Info.Println("====================== endpoint completed ===================")
 	glogger.Info.Println("")
 
+	glogger.Info.Println("====================== test_dns_spec.go =====================")
+	testDnsSpec(hostUrl)
+	glogger.Info.Println("====================== endpoint completed ===================")
+	glogger.Info.Println("")
+
 	glogger.Info.Println("====================== test_dns_remove.go ===================")
 	testDnsRemove(hostUrl)
 	glogger.Info.Println("====================== endpoint completed ===================")
@@ -76,6 +81,24 @@ func threeKeyPostEndpoint(hostUrl, endpoint, firstKey, firstValue, secondKey, se
 	}
 
 	return resp.StatusCode
+}
+
+func twoKeyPostReturnEndpoint(hostUrl, endpoint, firstKey, firstValue, secondKey, secondValue string) (string, int) {
+	postData := url.Values{}
+	postData.Set(firstKey, firstValue)
+	postData.Add(secondKey, secondValue)
+
+	client := &http.Client{}
+	req, _ := http.NewRequest("POST", fmt.Sprintf("%s%s", hostUrl, endpoint), strings.NewReader(postData.Encode()))
+	req.Header.Add("Content-Type", "application/x-www-form-urlencoded")
+	resp, err := client.Do(req)
+	if err != nil {
+		glogger.Error.Println(err)
+	}
+	defer resp.Body.Close()
+	bodyMsg, _ := ioutil.ReadAll(resp.Body)
+
+	return string(bodyMsg), resp.StatusCode
 }
 
 func checkResponse(prefix string, wantedResponse, respCode int) {
