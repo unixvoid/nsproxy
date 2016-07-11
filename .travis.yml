@@ -1,0 +1,12 @@
+language: go
+sudo: required
+
+go:
+  - 1.5.1
+
+install:
+  - make deps
+
+script:
+  - make stat daemon
+  - make test

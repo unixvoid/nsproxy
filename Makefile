@@ -17,6 +17,9 @@ nsproxy:
 run:
 	go run nsproxy/*.go
 
+daemon:
+	bin/nsproxy &
+
 test:
 	go run nsproxy_tests/*.go
 
