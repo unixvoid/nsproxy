@@ -56,6 +56,7 @@ func main() {
 	if responseErr {
 		glogger.Info.Println("")
 		glogger.Error.Println("\x1b[31;1mError detected.. Goodluck and godspeed\x1b[0m")
+		os.Exit(1)
 	} else {
 		glogger.Info.Println("")
 		glogger.Info.Println("\x1b[36m ___ ___ ___ ___ ___ _ _ _ _ \x1b[39m")
