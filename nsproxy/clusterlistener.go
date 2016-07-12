@@ -17,7 +17,7 @@ func asyncClusterListener() {
 		Password: config.Redis.Password,
 		DB:       0,
 	})
-	// first boot, remove live file
+	// first boot, remove live file and state file
 	redisClient.Del(fmt.Sprintf("index:live"))
 
 	// format the string to be :port

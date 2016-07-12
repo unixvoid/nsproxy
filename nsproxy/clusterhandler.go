@@ -56,6 +56,9 @@ func clusterHandler(w http.ResponseWriter, r *http.Request, redisClient *redis.C
 		// diff index:master and index:live to find/register the new live host
 		clusterDiff(redisClient)
 
+		// remove any state entry that may exist
+		redisClient.SRem(fmt.Sprintf("state:cluster:%s", cluster), fmt.Sprintf("%s:%s", hostIp, hostPort))
+
 		// return confirmation header to client
 		w.Header().Set("x-register", "registered")
 		w.WriteHeader(http.StatusOK)

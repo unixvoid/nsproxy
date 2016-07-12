@@ -12,6 +12,7 @@ import (
 func spawnClusterManager(cluster, hostname, ip, port string, redisClient *redis.Client) {
 	// add in a connection drain redis entry cluster:<cluster_name>:<hostname> <drain time>
 	connectionDrain := config.Clustermanager.ConnectionDrain
+
 	if config.Clustermanager.ClientPingType == "port" {
 		nslog.Cluster.Printf("spawning async cluster manager for %s:%s on port %s", cluster, hostname, port)
 	} else {
@@ -19,6 +20,7 @@ func spawnClusterManager(cluster, hostname, ip, port string, redisClient *redis.
 	}
 
 	var healthCheck bool
+	var state bool
 	online := true
 	for online {
 		if config.Clustermanager.ClientPingType == "port" {
@@ -30,8 +32,16 @@ func spawnClusterManager(cluster, hostname, ip, port string, redisClient *redis.
 			//nslog.Debug.Printf("- %s:%s online", cluster, hostname)
 			// reset connection drain
 			if connectionDrain != config.Clustermanager.ConnectionDrain {
-				nslog.Cluster.Printf("%s:%s listener draining reset", cluster, hostname)
-				connectionDrain = config.Clustermanager.ConnectionDrain
+				// evaluate the current anomaly state of the cluster
+				state = redisClient.SIsMember(fmt.Sprintf("state:cluster:%s", cluster), fmt.Sprintf("%s:%s", ip, port)).Val()
+				if !state {
+					nslog.Cluster.Printf("%s:%s listener draining reset", cluster, hostname)
+					connectionDrain = config.Clustermanager.ConnectionDrain
+				} else {
+					nslog.Cluster.Printf("%s:%s was replaced during connection drain. closing listener", cluster, hostname)
+					online = false
+					break
+				}
 			}
 		} else {
 			if connectionDrain < (0 + int(config.Clustermanager.PingFreq)) {
@@ -42,6 +52,8 @@ func spawnClusterManager(cluster, hostname, ip, port string, redisClient *redis.
 			// print draining message if first shot
 			if connectionDrain == config.Clustermanager.ConnectionDrain {
 				nslog.Cluster.Printf("%s:%s listener draining", cluster, hostname)
+				// this is the first time the host is dying, add its state to the index
+				redisClient.SAdd(fmt.Sprintf("state:cluster:%s", cluster), fmt.Sprintf("%s:%s", ip, port))
 			}
 			connectionDrain = connectionDrain - int(config.Clustermanager.PingFreq)
 		}
@@ -67,4 +79,7 @@ func spawnClusterManager(cluster, hostname, ip, port string, redisClient *redis.
 	// remove the host form master and live index entries
 	redisClient.SRem("index:master", fmt.Sprintf("%s:%s", cluster, hostname))
 	redisClient.SRem("index:live", fmt.Sprintf("%s:%s", cluster, hostname))
+
+	// remove any state entry that may exist
+	redisClient.SRem(fmt.Sprintf("state:cluster:%s", cluster), fmt.Sprintf("%s:%s", ip, port))
 }
