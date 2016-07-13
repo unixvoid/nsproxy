@@ -24,6 +24,7 @@ func TestDnsHandler(t *testing.T) {
 	dnsHandler(w, r, redisClient)
 	if w.Code == 200 {
 		// we expect 200
+		t.Log("\x1b[31mSending POST :: /dns\x1b[39m")
 		t.Log("Recieved 200 correctly")
 	} else {
 		// error

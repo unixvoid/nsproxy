@@ -25,6 +25,7 @@ func TestApiHostSpecHandler(t *testing.T) {
 	apiHostSpecHandler(w, r, redisClient)
 	if w.Code == 200 {
 		// we expect 200
+		t.Log("\x1b[31mSending POST :: /hostspec\x1b[39m")
 		t.Log("Recieved 200 correctly")
 		t.Logf("Body returned: \x1b[36m%s\x1b[39m", w.Body)
 	} else {
