@@ -50,4 +50,6 @@ func TestTeardown(t *testing.T) {
 	redisClient.Del("cluster:testcluster:test.domain")
 	redisClient.Del("weight:testcluster:test.domain")
 	redisClient.Del("state:cluster:testcluster")
+	redisClient.Del("dns:a:test.domain.")
+	redisClient.Del("index:dns")
 }
