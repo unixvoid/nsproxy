@@ -1,7 +1,7 @@
 GOC=go build
 GOFLAGS=-a -ldflags '-s'
 CGOR=CGO_ENABLED=0
-IMAGE_NAME=nsproxy
+IMAGE_NAME=docker.io/unixvoid/nsproxy:develop
 HOST_LISTEN_PORT=8053
 DOCKER_DNS_LISTEN_PORT=53
 DOCKER_API_LISTEN_PORT=8080
@@ -15,13 +15,28 @@ nsproxy:
 	$(GOC) nsproxy/*.go
 
 run:
-	go run nsproxy/*.go
+	cd nsproxy && go run \
+		api_clusters.go \
+		api_cluster_spec.go \
+		api_dns_entries.go \
+		api_dns.go \
+		api_dns_rm.go \
+		api_dns_spec.go \
+		api_hosts.go \
+		api_host_spec.go \
+		diff.go \
+		dns_builder.go  \
+		endpoints.go \
+		new_host.go \
+		nsproxy.go \
+		sync.go \
+		watch.go
 
 daemon:
 	bin/nsproxy &
 
 test:
-	go run nsproxy_tests/*.go
+	go test -v nsproxy/*.go
 
 rundocker:
 	sudo docker run \

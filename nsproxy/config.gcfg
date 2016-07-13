@@ -3,14 +3,14 @@
 	loglevel			= "cluster"
 
 [clustermanager]
-	useclustermanager	= true
+	useclustermanager		= true
 	port				= 8080
 	pingfreq			= 4
-	clientpingtype		= "port"
-	connectiondrain		= 10
+	clientpingtype			= "port"
+	connectiondrain			= 10
 
 [dns]
-	ttl					= 60
+	ttl				= 60
 
 [upstreamdns]
 	server				= "8.8.8.8:53"

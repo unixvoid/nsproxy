@@ -46,32 +46,14 @@ var (
 )
 
 func main() {
-	// init config file
-	err := gcfg.ReadFileInto(&config, "config.gcfg")
-	if err != nil {
-		fmt.Printf("Could not load config.gcfg, error: %s\n", err)
-		return
-	}
+	// read in conf
+	readConf()
 
 	// init logger
-	if config.Server.Loglevel == "debug" {
-		nslog.LogInit(os.Stdout, os.Stdout, os.Stdout, os.Stderr)
-	} else if config.Server.Loglevel == "cluster" {
-		nslog.LogInit(os.Stdout, os.Stdout, ioutil.Discard, os.Stderr)
-	} else if config.Server.Loglevel == "info" {
-		nslog.LogInit(os.Stdout, ioutil.Discard, ioutil.Discard, os.Stderr)
-	} else {
-		nslog.LogInit(ioutil.Discard, ioutil.Discard, ioutil.Discard, os.Stderr)
-	}
+	initLogger()
 
 	// init redis connection
-	redisClient := redis.NewClient(&redis.Options{
-		Addr:     config.Redis.Host,
-		Password: config.Redis.Password,
-		DB:       0,
-	})
-
-	_, redisErr := redisClient.Ping().Result()
+	redisClient, redisErr := initRedisConnection()
 	if redisErr != nil {
 		nslog.Error.Println("redis connection cannot be made.")
 		nslog.Error.Println("nsproxy will continue to function in passthrough mode only")
@@ -97,6 +79,39 @@ func main() {
 		log.Fatal(udpServer.ListenAndServe())
 	}()
 	log.Fatal(tcpServer.ListenAndServe())
+}
+func readConf() {
+	// init config file
+	err := gcfg.ReadFileInto(&config, "config.gcfg")
+	if err != nil {
+		fmt.Printf("Could not load config.gcfg, error: %s\n", err)
+		return
+	}
+}
+
+func initLogger() {
+	// init logger
+	if config.Server.Loglevel == "debug" {
+		nslog.LogInit(os.Stdout, os.Stdout, os.Stdout, os.Stderr)
+	} else if config.Server.Loglevel == "cluster" {
+		nslog.LogInit(os.Stdout, os.Stdout, ioutil.Discard, os.Stderr)
+	} else if config.Server.Loglevel == "info" {
+		nslog.LogInit(os.Stdout, ioutil.Discard, ioutil.Discard, os.Stderr)
+	} else {
+		nslog.LogInit(ioutil.Discard, ioutil.Discard, ioutil.Discard, os.Stderr)
+	}
+}
+
+func initRedisConnection() (*redis.Client, error) {
+	// init redis connection
+	redisClient := redis.NewClient(&redis.Options{
+		Addr:     config.Redis.Host,
+		Password: config.Redis.Password,
+		DB:       0,
+	})
+
+	_, redisErr := redisClient.Ping().Result()
+	return redisClient, redisErr
 }
 
 func route(w dns.ResponseWriter, req *dns.Msg, redisClient *redis.Client) {

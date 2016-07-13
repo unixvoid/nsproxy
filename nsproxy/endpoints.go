@@ -7,16 +7,12 @@ import (
 
 	"github.com/gorilla/mux"
 	"github.com/unixvoid/nsproxy/pkg/nslog"
-	"gopkg.in/redis.v3"
 )
 
 func asyncClusterListener() {
 	// async listener gets its own redis connection
-	redisClient := redis.NewClient(&redis.Options{
-		Addr:     config.Redis.Host,
-		Password: config.Redis.Password,
-		DB:       0,
-	})
+	redisClient, _ := initRedisConnection()
+
 	// first boot, remove live file and state file
 	redisClient.Del(fmt.Sprintf("index:live"))
 
