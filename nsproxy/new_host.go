@@ -45,7 +45,7 @@ func clusterHandler(w http.ResponseWriter, r *http.Request, redisClient *redis.C
 
 		// add to index if it does not exist index:cluster:<cluster_name> <host_name>
 		redisClient.SAdd(fmt.Sprintf("index:cluster:%s", cluster), hostname)
-		syncList(cluster, redisClient)
+		go syncList(cluster, redisClient)
 		redisClient.SAdd("index:master", fmt.Sprintf("%s:%s", cluster, hostname))
 
 		// add port if it is set
@@ -54,7 +54,7 @@ func clusterHandler(w http.ResponseWriter, r *http.Request, redisClient *redis.C
 		}
 
 		// diff index:master and index:live to find/register the new live host
-		clusterDiff(redisClient)
+		go clusterDiff(redisClient)
 
 		// remove any state entry that may exist
 		redisClient.SRem(fmt.Sprintf("state:cluster:%s", cluster), fmt.Sprintf("%s:%s", hostIp, hostPort))
