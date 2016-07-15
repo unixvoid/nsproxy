@@ -67,7 +67,7 @@ docker:
 	sed -i "s/<DIFF>/$(shell git rev-parse HEAD | head -c 10)/g" stage.tmp/Dockerfile
 	chmod +x deps/run.sh
 	cp deps/run.sh stage.tmp/
-	cp config.gcfg stage.tmp/
+	cp nsproxy/config.gcfg stage.tmp/
 	cd stage.tmp/ && \
 		sudo docker build $(DOCKER_OPTIONS) -t $(IMAGE_NAME) .
 	@echo "$(IMAGE_NAME) built"
