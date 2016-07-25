@@ -6,13 +6,17 @@ import (
 	"net/url"
 	"strings"
 	"testing"
+	"time"
 )
 
 func TestApiHostsHandler(t *testing.T) {
 	readConf()
 	redisClient, _ := initRedisConnection()
+
 	// add a test host to use
 	TestClusterHandler(t)
+	// sleep so the async task can finish
+	time.Sleep(1 * time.Millisecond)
 
 	getData := url.Values{}
 

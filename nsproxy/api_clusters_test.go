@@ -6,6 +6,7 @@ import (
 	"net/url"
 	"strings"
 	"testing"
+	"time"
 )
 
 func TestApiClustersHandler(t *testing.T) {
@@ -15,6 +16,8 @@ func TestApiClustersHandler(t *testing.T) {
 
 	// add a test host to use
 	TestClusterHandler(t)
+	// sleep so the async task can finish
+	time.Sleep(1 * time.Millisecond)
 
 	r, _ := http.NewRequest("GET", "", strings.NewReader(postData.Encode()))
 	r.Header.Add("Content-Type", "application/x-www-form-urlencoded")
