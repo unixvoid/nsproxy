@@ -80,11 +80,12 @@ func main() {
 	}()
 	log.Fatal(tcpServer.ListenAndServe())
 }
+
 func readConf() {
 	// init config file
 	err := gcfg.ReadFileInto(&config, "config.gcfg")
 	if err != nil {
-		fmt.Printf("Could not load config.gcfg, error: %s\n", err)
+		panic(fmt.Sprintf("Could not load config.gcfg, error: %s\n", err))
 		return
 	}
 }

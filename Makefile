@@ -1,7 +1,7 @@
 GOC=go build
 GOFLAGS=-a -ldflags '-s'
 CGOR=CGO_ENABLED=0
-IMAGE_NAME=docker.io/unixvoid/nsproxy:develop
+IMAGE_NAME=docker.io/unixvoid/nsproxy
 HOST_LISTEN_PORT=8053
 DOCKER_DNS_LISTEN_PORT=53
 DOCKER_API_LISTEN_PORT=8080
