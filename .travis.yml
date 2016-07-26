@@ -6,6 +6,7 @@ go:
 
 services:
   - redis-server
+  - docker
 
 install:
   - make dependencies
