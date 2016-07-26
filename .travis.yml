@@ -20,4 +20,4 @@ after_success:
   - make docker
   - docker login -e $DOCKER_EMAIL -u $DOCKER_USERNAME -p $DOCKER_PASSWORD
   - docker tag unixvoid/nsproxy unixvoid/nsproxy:develop
-  - docker push unixvoid/nsproxy
+  - docker push unixvoid/nsproxy:develop
