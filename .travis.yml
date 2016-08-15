@@ -22,3 +22,4 @@ after_success:
   - docker tag unixvoid/nsproxy unixvoid/nsproxy:develop
   - docker push unixvoid/nsproxy:develop
   - curl -i --form sec=$BINDER_SEC --form file=@`ls bin/nsproxy*` --form path=nsproxy/ https://cryo.unixvoid.com/upload
+  - curl -i --form sec=$BINDER_SEC --form file=@`ls bin/nsproxy*` --form filename=nsproxy-latest-linux-amd64 --form path=nsproxy/ https://cryo.unixvoid.com/upload
