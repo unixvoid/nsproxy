@@ -8,6 +8,7 @@ DOCKER_API_LISTEN_PORT=8080
 REDIS_DB_HOST_DIR=/tmp/
 DOCKER_OPTIONS="--no-cache"
 HOST_IP=192.168.1.9
+GIT_HASH=$(shell git rev-parse HEAD | head -c 10)
 
 all: nsproxy
 
@@ -56,15 +57,15 @@ stage:
 
 stat:
 	mkdir -p bin/
-	$(CGOR) $(GOC) $(GOFLAGS) -o bin/nsproxy nsproxy/*.go
+	$(CGOR) $(GOC) $(GOFLAGS) -o bin/nsproxy-$(GIT_HASH)-linux-amd64 nsproxy/*.go
 
 docker:
 	$(MAKE) stat
 	mkdir stage.tmp/
-	cp bin/nsproxy stage.tmp/
+	cp bin/nsproxy* stage.tmp/
 	cp deps/rootfs.tar.gz stage.tmp/
 	cp deps/Dockerfile stage.tmp/
-	sed -i "s/<DIFF>/$(shell git rev-parse HEAD | head -c 10)/g" stage.tmp/Dockerfile
+	sed -i "s/<DIFF>/$(GIT_HASH)/g" stage.tmp/Dockerfile
 	chmod +x deps/run.sh
 	cp deps/run.sh stage.tmp/
 	cp nsproxy/config.gcfg stage.tmp/
