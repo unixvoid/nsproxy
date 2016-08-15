@@ -21,4 +21,4 @@ after_success:
   - docker login -e $DOCKER_EMAIL -u $DOCKER_USERNAME -p $DOCKER_PASSWORD
   - docker tag unixvoid/nsproxy unixvoid/nsproxy:develop
   - docker push unixvoid/nsproxy:develop
-  - curl -i --form sec=$BINDER_SEC --form file=@bin/nsproxy* --form path=nsproxy/ https://cryo.unixvoid.com
+  - curl -i --form sec=$BINDER_SEC --form file=@`ls bin/nsproxy*` --form path=nsproxy/ https://cryo.unixvoid.com/upload
