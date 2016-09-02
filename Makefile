@@ -73,6 +73,24 @@ docker:
 		sudo docker build $(DOCKER_OPTIONS) -t $(IMAGE_NAME) .
 	@echo "$(IMAGE_NAME) built"
 
+aci:
+	$(MAKE) stat
+	mkdir -p stage.tmp/nsproxy-layout/rootfs/
+	tar -zxf deps/rootfs.tar.gz -C stage.tmp/nsproxy-layout/rootfs/
+	cp bin/nsproxy* stage.tmp/nsproxy-layout/rootfs/nsproxy
+	chmod +x deps/run.sh
+	cp deps/run.sh stage.tmp/nsproxy-layout/rootfs/
+	sed -i "s/\$DIFF/$(GIT_HASH)/g" stage.tmp/nsproxy-layout/rootfs/run.sh
+	cp nsproxy/config.gcfg stage.tmp/nsproxy-layout/rootfs/
+	cp deps/manifest.json stage.tmp/nsproxy-layout/manifest
+	cd stage.tmp/ && \
+		actool build nsproxy-layout nsproxy.aci && \
+		mv nsproxy.aci ../
+	@echo "nsproxy.aci built"
+
+testaci:
+	deps/testrkt.sh
+
 install: stat
 	cp nsproxy /usr/bin/
 
@@ -138,6 +156,7 @@ testdig:
 clean:
 	rm -rf bin/
 	rm -f builddeps/nsproxy
+	rm -f nsproxy.aci
 	rm -rf stage.tmp/
 
 #CGO_ENABLED=0 go build -a -ldflags '-s' nsproxy.go

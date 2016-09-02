@@ -1,0 +1,51 @@
+{
+    "acKind": "ImageManifest",
+    "acVersion": "0.7.1",
+    "name": "unixvoid.com/nsproxy",
+    "labels": [
+        {
+            "name": "version",
+            "value": "latest"
+        },
+        {
+            "name": "arch",
+            "value": "amd64"
+        },
+        {
+            "name": "os",
+            "value": "linux"
+        }
+    ],
+    "app": {
+        "user": "root",
+        "group": "root",
+        "exec": [
+            "/run.sh"
+        ],
+        "ports": [
+        {
+            "name": "dns",
+            "protocol": "tcp",
+            "port": 53
+        },
+        {
+            "name": "api",
+            "protocol": "tcp",
+            "port": 8080
+        }
+        ],
+        "mountPoints": [
+        {
+            "name": "redis",
+            "path": "/redisbackup/",
+            "readOnly": false
+        }
+        ]
+    },
+    "annotations": [
+        {
+        "name": "authors",
+        "value": "Matthew Faltys <mfaltys@gmail.com>"
+    }
+    ]
+}

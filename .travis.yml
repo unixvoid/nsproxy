@@ -16,10 +16,11 @@ script:
   - make test
 
 after_success:
-  - make clean
-  - make docker
+  - make clean docker
   - docker login -e $DOCKER_EMAIL -u $DOCKER_USERNAME -p $DOCKER_PASSWORD
   - docker tag unixvoid/nsproxy unixvoid/nsproxy:develop
   - docker push unixvoid/nsproxy:develop
+  - make clean aci
+  - curl -i --form sec=$BINDER_SEC --form file=@nsproxy.aci --form filename=nsproxy-latest-linux-amd64.aci --form path=rkt/nsproxy/ https://cryo.unixvoid.com/upload
   - curl -i --form sec=$BINDER_SEC --form file=@`ls bin/nsproxy*` --form path=nsproxy/ https://cryo.unixvoid.com/upload
   - curl -i --form sec=$BINDER_SEC --form file=@`ls bin/nsproxy*` --form filename=nsproxy-latest-linux-amd64 --form path=nsproxy/ https://cryo.unixvoid.com/upload
