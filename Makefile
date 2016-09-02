@@ -153,10 +153,23 @@ testdig:
 	@echo "----------------------------------------------------------------------"
 	@echo "testing complete"
 
-travisactool:
+travisaci:
 	wget https://github.com/appc/spec/releases/download/v0.8.7/appc-v0.8.7.tar.gz
 	tar -zxf appc-v0.8.7.tar.gz
-	PATH=$(shell pwd)/appc-v0.8.7/actool:$PATH
+	chmod +x appc-v0.8.7/actool
+	$(MAKE) stat
+	mkdir -p stage.tmp/nsproxy-layout/rootfs/
+	tar -zxf deps/rootfs.tar.gz -C stage.tmp/nsproxy-layout/rootfs/
+	cp bin/nsproxy* stage.tmp/nsproxy-layout/rootfs/nsproxy
+	chmod +x deps/run.sh
+	cp deps/run.sh stage.tmp/nsproxy-layout/rootfs/
+	sed -i "s/\$DIFF/$(GIT_HASH)/g" stage.tmp/nsproxy-layout/rootfs/run.sh
+	cp nsproxy/config.gcfg stage.tmp/nsproxy-layout/rootfs/
+	cp deps/manifest.json stage.tmp/nsproxy-layout/manifest
+	cd stage.tmp/ && \
+		appc-v0.8.7/actool build nsproxy-layout nsproxy.aci && \
+		mv nsproxy.aci ../
+	@echo "nsproxy.aci built"
 
 clean:
 	rm -rf bin/
