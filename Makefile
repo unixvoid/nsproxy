@@ -153,6 +153,11 @@ testdig:
 	@echo "----------------------------------------------------------------------"
 	@echo "testing complete"
 
+travisactool:
+	wget https://github.com/appc/spec/releases/download/v0.8.7/appc-v0.8.7.tar.gz
+	tar -zxf appc-v0.8.7.tar.gz
+	alias actool='$(shell pwd)/appc-v0.8.7/actool'
+
 clean:
 	rm -rf bin/
 	rm -f builddeps/nsproxy
