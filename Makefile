@@ -157,6 +157,8 @@ travisaci:
 	wget https://github.com/appc/spec/releases/download/v0.8.7/appc-v0.8.7.tar.gz
 	tar -zxf appc-v0.8.7.tar.gz
 	chmod +x appc-v0.8.7/actool
+	ls -alh
+	ls -alh appc-v0.8.7
 	$(MAKE) stat
 	mkdir -p stage.tmp/nsproxy-layout/rootfs/
 	tar -zxf deps/rootfs.tar.gz -C stage.tmp/nsproxy-layout/rootfs/
