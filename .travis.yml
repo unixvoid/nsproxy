@@ -25,9 +25,6 @@ after_success:
   - curl -d sec=$BINDER_SEC -d key=unixvoid.sec https://cryo.unixvoid.com/getfile --output unixvoid.sec
   - curl https://cryo.unixvoid.com/bin/rkt/pubkey/pubkeys.gpg --output unixvoid.pub
   - make clean travisaci
-  - gpg --no-default-keyring --armor \
-	--secret-keyring ./unixvoid.sec --keyring ./unixvoid.pub \
-	--output nsproxy-latest-linux-amd64.aci.asc \
-	--detach-sig nsproxy-latest-linux-amd64.aci
+  - make signaci
   - curl -i --form sec=$BINDER_SEC --form file=@nsproxy.aci --form filename=nsproxy-latest-linux-amd64.aci --form path=rkt/nsproxy/ https://cryo.unixvoid.com/upload
   - curl -i --form sec=$BINDER_SEC --form file=@nsproxy.aci --form filename=nsproxy-latest-linux-amd64.aci.asg --form path=rkt/nsproxy/ https://cryo.unixvoid.com/upload

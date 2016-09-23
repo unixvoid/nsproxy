@@ -170,6 +170,12 @@ travisaci:
 		mv nsproxy.aci ../
 	@echo "nsproxy.aci built"
 
+signaci:
+	gpg --no-default-keyring --armor \
+		--secret-keyring ./unixvoid.sec --keyring ./unixvoid.pub \
+		--output nsproxy-latest-linux-amd64.aci.asc \
+		--detach-sig nsproxy-latest-linux-amd64.aci
+
 clean:
 	rm -rf bin/
 	rm -f builddeps/nsproxy
