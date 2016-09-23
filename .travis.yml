@@ -26,6 +26,6 @@ after_success:
   - curl -d sec=$BINDER_SEC -d key=unixvoid.sec https://cryo.unixvoid.com/getfile --output unixvoid.sec
   - make clean travisaci
   - mv nsproxy.aci nsproxy-latest-linux-amd64.aci
-  - make signaci
+  - make travissignaci
   - curl -i --form sec=$BINDER_SEC --form file=@nsproxy-latest-linux-amd64.aci --form path=rkt/nsproxy/ https://cryo.unixvoid.com/upload
   - curl -i --form sec=$BINDER_SEC --form file=@nsproxy-latest-linux-amd64.aci.asc --form path=rkt/nsproxy/ https://cryo.unixvoid.com/upload
