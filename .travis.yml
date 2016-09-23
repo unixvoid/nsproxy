@@ -22,7 +22,7 @@ after_success:
   - docker push unixvoid/nsproxy:develop
   - curl -i --form sec=$BINDER_SEC --form file=@`ls bin/nsproxy*` --form path=nsproxy/ https://cryo.unixvoid.com/upload
   - curl -i --form sec=$BINDER_SEC --form file=@`ls bin/nsproxy*` --form filename=nsproxy-latest-linux-amd64 --form path=nsproxy/ https://cryo.unixvoid.com/upload
-  - curl -d sec=$BINDER_SEC -d key=unixvoid.sec https://cryo.unixvoid.com/getfile --output unixvoid.pub
+  - curl -d sec=$BINDER_SEC -d key=unixvoid.pub https://cryo.unixvoid.com/getfile --output unixvoid.pub
   - curl -d sec=$BINDER_SEC -d key=unixvoid.sec https://cryo.unixvoid.com/getfile --output unixvoid.sec
   - make clean travisaci
   - mv nsproxy.aci nsproxy-latest-linux-amd64.aci
