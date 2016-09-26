@@ -24,8 +24,13 @@
         ],
         "ports": [
         {
-            "name": "dns",
+            "name": "dns-tcp",
             "protocol": "tcp",
+            "port": 53
+        },
+        {
+            "name": "dns-udp",
+            "protocol": "udp",
             "port": 53
         },
         {
