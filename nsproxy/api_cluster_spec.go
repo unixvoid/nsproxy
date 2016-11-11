@@ -28,6 +28,11 @@ func apiClusterSpecHandler(w http.ResponseWriter, r *http.Request, redisClient *
 	if err != nil {
 		w.WriteHeader(http.StatusBadRequest)
 	}
-	redisClient.Del("tmp:cluster:index")
-	fmt.Fprintln(w, clusters)
+	if fmt.Sprintf("%x", clusters) == "[]" {
+		// empty reply, return 400
+		w.WriteHeader(http.StatusBadRequest)
+	} else {
+		redisClient.Del("tmp:cluster:index")
+		fmt.Fprintln(w, clusters)
+	}
 }
