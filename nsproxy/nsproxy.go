@@ -123,6 +123,8 @@ func route(w dns.ResponseWriter, req *dns.Msg, redisClient *redis.Client) {
 func proxy(addr string, w dns.ResponseWriter, req *dns.Msg, redisClient *redis.Client) {
 	clusterString := req.Question[0].Name
 	if strings.Contains(clusterString, "cluster-") {
+		// TODO make sure cluster-<> is in the db
+
 		// it is a cluster entry, forward the request to the dns cluster handler
 		// remove the FQDM '.' from end of 'clusterString'
 		fqdnHostname := clusterString
@@ -150,23 +152,24 @@ func proxy(addr string, w dns.ResponseWriter, req *dns.Msg, redisClient *redis.C
 		// if we dont have an entry, pop a NXDOMAIN error
 		if len(hostIp) == 0 {
 			rep.Rcode = dns.RcodeNameError
+			w.WriteMsg(rep)
+		} else {
+			hostCWeightNum = hostCWeightNum - 1
+
+			if hostCWeightNum <= 0 {
+				// pop the list and add the entry to the end, it just got lb'd
+				hostIp, _ = redisClient.LPop(fmt.Sprintf("list:%s", clusterString)).Result()
+				redisClient.RPush(fmt.Sprintf("list:%s", clusterString), hostIp)
+				hostWeight, _ := redisClient.Get(fmt.Sprintf("weight:%s:%s", clusterName, hostName)).Result()
+				hostWeightNum, _ := strconv.Atoi(hostWeight)
+				hostCWeightNum = hostWeightNum
+				nslog.Debug.Println("resetting host weight")
+			}
+			nslog.Debug.Println("serving", clusterString, "from local record")
+			w.WriteMsg(rep)
+
+			redisClient.Set(fmt.Sprintf("cweight:%s:%s", clusterName, hostName), hostCWeightNum, 0).Err()
 		}
-
-		hostCWeightNum = hostCWeightNum - 1
-
-		if hostCWeightNum <= 0 {
-			// pop the list and add the entry to the end, it just got lb'd
-			hostIp, _ = redisClient.LPop(fmt.Sprintf("list:%s", clusterString)).Result()
-			redisClient.RPush(fmt.Sprintf("list:%s", clusterString), hostIp)
-			hostWeight, _ := redisClient.Get(fmt.Sprintf("weight:%s:%s", clusterName, hostName)).Result()
-			hostWeightNum, _ := strconv.Atoi(hostWeight)
-			hostCWeightNum = hostWeightNum
-			nslog.Debug.Println("resetting host weight")
-		}
-		nslog.Debug.Println("serving", clusterString, "from local record")
-		w.WriteMsg(rep)
-
-		redisClient.Set(fmt.Sprintf("cweight:%s:%s", clusterName, hostName), hostCWeightNum, 0).Err()
 	} else {
 
 		transport := "udp"
