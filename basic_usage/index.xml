@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>Basic_usages on nsproxy-docs</title>
+    <link>https://unixvoid.github.io/nsproxy/basic_usage/index.xml</link>
+    <description>Recent content in Basic_usages on nsproxy-docs</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>en-us</language>
+    <copyright>Released under the MIT license</copyright>
+    <lastBuildDate>Wed, 09 Mar 2016 00:11:02 +0100</lastBuildDate>
+    <atom:link href="https://unixvoid.github.io/nsproxy/basic_usage/index.xml" rel="self" type="application/rss+xml" />
+    
+    <item>
+      <title>Nsproxy Basic Usage</title>
+      <link>https://unixvoid.github.io/nsproxy/basic_usage/</link>
+      <pubDate>Wed, 09 Mar 2016 00:11:02 +0100</pubDate>
+      
+      <guid>https://unixvoid.github.io/nsproxy/basic_usage/</guid>
+      <description>&lt;p&gt;The following usage implies the default config file is being used.&lt;/p&gt;
+
+&lt;ul&gt;
+&lt;li&gt;On boot nsproxy will bind to two ports:&lt;br /&gt;
+
+&lt;ul&gt;
+&lt;li&gt;&lt;code&gt;53&lt;/code&gt; is used as the regular dns server.  This will act the same as any other dns server and allows for custom dns entries to be used.&lt;br /&gt;&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;8080&lt;/code&gt; is used as the cluster manager.  Clients should post to this port to bind with the dns server.&lt;br /&gt;&lt;/li&gt;
+&lt;/ul&gt;&lt;/li&gt;
+&lt;li&gt;DNS entries can be added in a similar fashion to registering a host.  A POST on the same port that the clustermanager is running on in the following format will add an entry to the dns server.&lt;br /&gt;
+
+&lt;ul&gt;
+&lt;li&gt;&lt;code&gt;/dns&lt;/code&gt; dnstype= domain= value=&lt;br /&gt;&lt;/li&gt;
+&lt;li&gt;example &lt;code&gt;curl -d dnstype=a domain=unixvoid.com value=192.168.1.80 localhost:8080/dns&lt;/code&gt;&lt;br /&gt;&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;/dns/rm&lt;/code&gt; dnstype= domain= will remove a dns entry (and all for a domain if &amp;lsquo;dnstype&amp;rsquo; not set)&lt;br /&gt;&lt;/li&gt;
+&lt;li&gt;example &lt;code&gt;curl -d dnstype=a domain=unixvoid.com localhost:8080/dns/rm&lt;/code&gt;&lt;br /&gt;&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;dns:&amp;lt;dns_type&amp;gt;:&amp;lt;fqdn&amp;gt;&lt;/code&gt; and the content being a valid A, AAAA, or CNAME entry.&lt;br /&gt;&lt;/li&gt;
+&lt;/ul&gt;&lt;/li&gt;
+&lt;li&gt;Here are some examples on what typical redis entries would look like.&lt;br /&gt;
+
+&lt;ul&gt;
+&lt;li&gt;entry: &lt;code&gt;dns:a:unixvoid.com.&lt;/code&gt; content: &lt;code&gt;67.3.192.22&lt;/code&gt;&lt;br /&gt;&lt;/li&gt;
+&lt;li&gt;entry: &lt;code&gt;dns:aaaa:unixvoid.com.&lt;/code&gt; content: &lt;code&gt;::1&lt;/code&gt;&lt;br /&gt;&lt;/li&gt;
+&lt;li&gt;entry: &lt;code&gt;dns:cname:unixvoid.com.&lt;/code&gt; content: &lt;code&gt;customlb.cname.&lt;/code&gt;&lt;br /&gt;&lt;/li&gt;
+&lt;/ul&gt;&lt;/li&gt;
+&lt;li&gt;To register a client with the cluster manager, the client will send a form
+(&lt;code&gt;application/x-www-form-urlencoded&lt;/code&gt;) to nsproxy with the following data.
+
+&lt;ul&gt;
+&lt;li&gt;&lt;code&gt;hostname&lt;/code&gt;:  the hostname of the box&lt;br /&gt;&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;cluster&lt;/code&gt;:  the intended cluster to join.&lt;br /&gt;&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;ip&lt;/code&gt;(optional):  ip (usefull when client is behind proxy/loadbalancer).&lt;br /&gt;&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;port&lt;/code&gt;(optional): port to tcp health check on, must be set if
+clientpingtype = port.&lt;br /&gt;&lt;/li&gt;
+&lt;li&gt;Both of these fields are required.&lt;br /&gt;&lt;/li&gt;
+&lt;/ul&gt;&lt;/li&gt;
+&lt;li&gt;A regular client registration looks like this:&lt;br /&gt;
+&lt;code&gt;curl -d hostname=nginx -d cluster=coreos unixvoid.com:8080&lt;/code&gt;  This will add the host &lt;code&gt;nginx&lt;/code&gt; to the cluster &lt;code&gt;coreos&lt;/code&gt;.  These names are arbitrary and can be anything.&lt;br /&gt;&lt;/li&gt;
+&lt;/ul&gt;
+</description>
+    </item>
+    
+  </channel>
+</rss>

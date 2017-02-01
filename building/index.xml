@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>Buildings on nsproxy-docs</title>
+    <link>https://unixvoid.github.io/nsproxy/building/index.xml</link>
+    <description>Recent content in Buildings on nsproxy-docs</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>en-us</language>
+    <copyright>Released under the MIT license</copyright>
+    <lastBuildDate>Wed, 09 Mar 2016 00:11:02 +0100</lastBuildDate>
+    <atom:link href="https://unixvoid.github.io/nsproxy/building/index.xml" rel="self" type="application/rss+xml" />
+    
+    <item>
+      <title>Building nsproxy</title>
+      <link>https://unixvoid.github.io/nsproxy/building/</link>
+      <pubDate>Wed, 09 Mar 2016 00:11:02 +0100</pubDate>
+      
+      <guid>https://unixvoid.github.io/nsproxy/building/</guid>
+      <description>&lt;p&gt;This project requires golang to be installed with the dependencies in place.&lt;/p&gt;
+
+&lt;ul&gt;
+&lt;li&gt;To pull the dependencies on your box simply issue &lt;code&gt;make deps&lt;/code&gt; to do all the &lt;code&gt;go get&lt;/code&gt;s for you.&lt;br /&gt;&lt;/li&gt;
+&lt;li&gt;make will accept the following commands:&lt;br /&gt;
+
+&lt;ul&gt;
+&lt;li&gt;&lt;code&gt;make nsproxy&lt;/code&gt; will dynamically build nsproxy&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;make stat&lt;/code&gt; will statically build nsproxy&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;make stage&lt;/code&gt; will build and stage all files for preperation of building a
+container&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;make link&lt;/code&gt; will link the project to your GOPATH, this way if a pkg changes it will be updated in your GOPATH as well&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;make deps&lt;/code&gt; will do all the required &lt;code&gt;go get&lt;/code&gt;s for you&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;make populate&lt;/code&gt; will populate the local DNS server with entries for testing&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;make testhealthcheck&lt;/code&gt; will run a health check docker against a local version of nsproxy&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;make rmhealthcheck&lt;/code&gt; will remove the docker containers made by &lt;code&gt;testhealthcheck&lt;/code&gt;&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;make test&lt;/code&gt; will test against the entries added by &lt;code&gt;make populate&lt;/code&gt;&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;make docker&lt;/code&gt; will build a docker image.  You can specify a non default docker name by editing the &lt;code&gt;IMAGE_NAME&lt;/code&gt; field of the Makefile&lt;br /&gt;&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;make install&lt;/code&gt; will install the compiled nsproxy in /usr/bin/&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;make clean&lt;/code&gt; will clean the project of all tmp directories and binaries&lt;/li&gt;
+&lt;/ul&gt;&lt;/li&gt;
+&lt;/ul&gt;
+</description>
+    </item>
+    
+  </channel>
+</rss>

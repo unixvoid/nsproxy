@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>Configurations on nsproxy-docs</title>
+    <link>https://unixvoid.github.io/nsproxy/configuration/index.xml</link>
+    <description>Recent content in Configurations on nsproxy-docs</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>en-us</language>
+    <copyright>Released under the MIT license</copyright>
+    <lastBuildDate>Wed, 09 Mar 2016 00:11:02 +0100</lastBuildDate>
+    <atom:link href="https://unixvoid.github.io/nsproxy/configuration/index.xml" rel="self" type="application/rss+xml" />
+    
+    <item>
+      <title>Configuring nsproxy</title>
+      <link>https://unixvoid.github.io/nsproxy/configuration/</link>
+      <pubDate>Wed, 09 Mar 2016 00:11:02 +0100</pubDate>
+      
+      <guid>https://unixvoid.github.io/nsproxy/configuration/</guid>
+      <description>&lt;p&gt;Nsproxy uses &lt;strong&gt;gcfg&lt;/strong&gt; (INI-style config files for go structs).&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;[server]
+	port				= 53
+	loglevel			= &amp;quot;cluster&amp;quot;
+
+[clustermanager]
+	useclustermanager	= true
+	port				= 8080
+	pingfreq			= 4
+	clientpingtype		= &amp;quot;port&amp;quot;
+	connectiondrain		= 10
+
+[dns]
+	ttl					= 60
+
+[upstreamdns]
+	server				= &amp;quot;8.8.8.8:53&amp;quot;
+
+[redis]
+	host				= &amp;quot;localhost:6379&amp;quot;
+	password			= &amp;quot;&amp;quot;
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;The config uses some pretty sane defaults but the following fields are configurable:&lt;/p&gt;
+
+&lt;ul&gt;
+&lt;li&gt;&lt;code&gt;[server]&lt;/code&gt;
+
+&lt;ul&gt;
+&lt;li&gt;&lt;code&gt;port:&lt;/code&gt;  the port the main DNS server listens on.&lt;br /&gt;&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;loglevel:&lt;/code&gt;  the verbosity of logs. acceptable fields are &amp;lsquo;info&amp;rsquo;, &amp;lsquo;cluster&amp;rsquo;, &amp;lsquo;debug&amp;rsquo;, and &amp;lsquo;error&amp;rsquo;.&lt;br /&gt;&lt;/li&gt;
+&lt;/ul&gt;&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;[clustermanager]&lt;/code&gt;
+
+&lt;ul&gt;
+&lt;li&gt;&lt;code&gt;useclustermanager:&lt;/code&gt;  whether or not to use the cluster manager. acceptable fields are &amp;lsquo;true&amp;rsquo; and &amp;lsquo;false&amp;rsquo;&lt;br /&gt;&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;port:&lt;/code&gt;  the port that cluster manager will listen on (this is what port clients use to check in)&lt;br /&gt;&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;pingfeq:&lt;/code&gt;  the ammout of time in between health checks (in seconds)&lt;br /&gt;&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;clientpingtype:&lt;/code&gt;  the type of ping to be used. acceptable fields are &amp;lsquo;icmp&amp;rsquo; and &amp;lsquo;port&amp;rsquo;.  If port is set, client must send &amp;lsquo;port&amp;rsquo; field in cluster registration.&lt;br /&gt;&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;connectiondrain:&lt;/code&gt;  the time in seconds for the connection to drain. this is a grace period between a bad health check and actually removing the host from rotation. set to 0 if this is uneeded.&lt;br /&gt;&lt;/li&gt;
+&lt;/ul&gt;&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;[dns]&lt;/code&gt;
+
+&lt;ul&gt;
+&lt;li&gt;&lt;code&gt;ttl:&lt;/code&gt;  the default time to live (in seconds) for dns entries&lt;br /&gt;&lt;/li&gt;
+&lt;/ul&gt;&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;[upstreamdns]&lt;/code&gt;
+
+&lt;ul&gt;
+&lt;li&gt;&lt;code&gt;server:&lt;/code&gt;  the dns server and port that nsproxy uses if it cannot find a match in the local database&lt;br /&gt;&lt;/li&gt;
+&lt;/ul&gt;&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;[redis]&lt;/code&gt;&lt;br /&gt;
+
+&lt;ul&gt;
+&lt;li&gt;&lt;code&gt;host:&lt;/code&gt;  this is the ip and port that the redis backend is running on&lt;br /&gt;&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;password:&lt;/code&gt;  password to the redis database if one exists&lt;/li&gt;
+&lt;/ul&gt;&lt;/li&gt;
+&lt;/ul&gt;
+</description>
+    </item>
+    
+  </channel>
+</rss>

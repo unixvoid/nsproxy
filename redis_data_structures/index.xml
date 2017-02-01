@@ -1,0 +1,97 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>Redis_data_structures on nsproxy-docs</title>
+    <link>https://unixvoid.github.io/nsproxy/redis_data_structures/index.xml</link>
+    <description>Recent content in Redis_data_structures on nsproxy-docs</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>en-us</language>
+    <copyright>Released under the MIT license</copyright>
+    <lastBuildDate>Wed, 09 Mar 2016 00:11:02 +0100</lastBuildDate>
+    <atom:link href="https://unixvoid.github.io/nsproxy/redis_data_structures/index.xml" rel="self" type="application/rss+xml" />
+    
+    <item>
+      <title>Redis Data Structures with nsproxy</title>
+      <link>https://unixvoid.github.io/nsproxy/redis_data_structures/</link>
+      <pubDate>Wed, 09 Mar 2016 00:11:02 +0100</pubDate>
+      
+      <guid>https://unixvoid.github.io/nsproxy/redis_data_structures/</guid>
+      <description>&lt;p&gt;This is designed to help the user understand what is going on inside of redis at a low level.  The following are redis keys (with examples) and what they store.&lt;/p&gt;
+
+&lt;ul&gt;
+&lt;li&gt;&lt;code&gt;cluster:&amp;lt;cluster_name&amp;gt;:&amp;lt;host_name&amp;gt;&lt;/code&gt; This is a low level entry that has a hostname&amp;rsquo;s ip
+
+&lt;ul&gt;
+&lt;li&gt;type: redis key&lt;/li&gt;
+&lt;li&gt;content: host ip&lt;/li&gt;
+&lt;li&gt;example &lt;code&gt;cluster:coreos:nginx&lt;/code&gt; 192.168.2.2&lt;/li&gt;
+&lt;/ul&gt;&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;port:&amp;lt;cluster_name&amp;gt;:&amp;lt;host_name&amp;gt;&lt;/code&gt; This is a low level entry that has a hostname&amp;rsquo;s port
+
+&lt;ul&gt;
+&lt;li&gt;type: redis key&lt;/li&gt;
+&lt;li&gt;content: host port&lt;/li&gt;
+&lt;li&gt;example &lt;code&gt;port:coreos:nginx&lt;/code&gt; 443&lt;/li&gt;
+&lt;/ul&gt;&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;index:cluster:&amp;lt;cluster_name&amp;gt;&lt;/code&gt; This is a medium level entry that contains the elements (hosts) that are in a cluster
+
+&lt;ul&gt;
+&lt;li&gt;type: redis set&lt;/li&gt;
+&lt;li&gt;content: cluster hosts&lt;/li&gt;
+&lt;li&gt;example &lt;code&gt;index:cluster:coreos&lt;/code&gt; {nginx, cApp, configServer}&lt;/li&gt;
+&lt;/ul&gt;&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;list:cluster:&amp;lt;cluster_name&amp;gt;&lt;/code&gt; This is a clone of the previous, used to hold order or load balanced hosts. This element stays in order to obey load balancer algoritms
+
+&lt;ul&gt;
+&lt;li&gt;type: redis unordered set (list)&lt;/li&gt;
+&lt;li&gt;content: cluster hosts&lt;/li&gt;
+&lt;li&gt;example &lt;code&gt;list:cluster:coreos&lt;/code&gt; {nginx, cApp, configServer}&lt;/li&gt;
+&lt;/ul&gt;&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;state:cluster:&amp;lt;cluster_name&amp;gt;&lt;/code&gt; This is a statefile for any draining host. When a host begins draining it adds itself the the state entry so a single box is not entered twice.
+
+&lt;ul&gt;
+&lt;li&gt;type: redis unordered set (list)&lt;/li&gt;
+&lt;li&gt;content: draining cluster ip:port&lt;/li&gt;
+&lt;li&gt;example &lt;code&gt;state:cluster:coreos&lt;/code&gt; {192.168.1.9:8080, 192.168.1.8:4410}&lt;/li&gt;
+&lt;/ul&gt;&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;index:master&lt;/code&gt; This a persistent index that hold a list of all clusters (this persists across nsproxy reboots)
+
+&lt;ul&gt;
+&lt;li&gt;type: redis set&lt;/li&gt;
+&lt;li&gt;content: clusters&lt;/li&gt;
+&lt;li&gt;example &lt;code&gt;index:master&lt;/code&gt; {coreos, neatCluster, ps2_cluster}&lt;/li&gt;
+&lt;/ul&gt;&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;index:live&lt;/code&gt; This is volitile entry that gets diffed against &lt;code&gt;index:master&lt;/code&gt; and only contains hosts that have live listeners
+
+&lt;ul&gt;
+&lt;li&gt;type: redis set&lt;/li&gt;
+&lt;li&gt;content: clusters&lt;/li&gt;
+&lt;li&gt;example &lt;code&gt;index:master&lt;/code&gt; {coreos, neatCluster, ps2_cluster}&lt;/li&gt;
+&lt;/ul&gt;&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;dns:&amp;lt;dns_type&amp;gt;:&amp;lt;domain&amp;gt;&lt;/code&gt; This is the standard dns entry&lt;br /&gt;
+
+&lt;ul&gt;
+&lt;li&gt;type: redis set&lt;br /&gt;&lt;/li&gt;
+&lt;li&gt;content: a, aaaa, cname entry&lt;br /&gt;&lt;/li&gt;
+&lt;li&gt;example &lt;code&gt;dns:a:unixvoid.com.&lt;/code&gt; 192.168.1.80&lt;br /&gt;&lt;/li&gt;
+&lt;/ul&gt;&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;weight:&amp;lt;cluster_name&amp;gt;:&amp;lt;host_name&amp;gt;&lt;/code&gt; This the entry that holds the master weight of the box for load balancing
+
+&lt;ul&gt;
+&lt;li&gt;type: redis key&lt;br /&gt;&lt;/li&gt;
+&lt;li&gt;content: the weight the box (defaults to 1)&lt;br /&gt;&lt;/li&gt;
+&lt;li&gt;example &lt;code&gt;weight:testapp:4146b6ec7810&lt;/code&gt; 5&lt;br /&gt;&lt;/li&gt;
+&lt;/ul&gt;&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;cweight:&amp;lt;cluster_name&amp;gt;:&amp;lt;host_name&amp;gt;&lt;/code&gt; This the entry that holds the current weight of the box for load balancing. This field is volitile
+
+&lt;ul&gt;
+&lt;li&gt;type: redis key&lt;br /&gt;&lt;/li&gt;
+&lt;li&gt;content: the current weight the box&lt;br /&gt;&lt;/li&gt;
+&lt;li&gt;example &lt;code&gt;cweight:testapp:4146b6ec7810&lt;/code&gt; 3&lt;br /&gt;&lt;/li&gt;
+&lt;/ul&gt;&lt;/li&gt;
+&lt;/ul&gt;
+</description>
+    </item>
+    
+  </channel>
+</rss>

@@ -1,0 +1,495 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>nsproxy-docs</title>
+    <link>https://unixvoid.github.io/nsproxy/index.xml</link>
+    <description>Recent content on nsproxy-docs</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>en-us</language>
+    <copyright>Released under the MIT license</copyright>
+    <lastBuildDate>Wed, 09 Mar 2016 00:11:02 +0100</lastBuildDate>
+    <atom:link href="https://unixvoid.github.io/nsproxy/index.xml" rel="self" type="application/rss+xml" />
+    
+    <item>
+      <title>Building nsproxy</title>
+      <link>https://unixvoid.github.io/nsproxy/building/</link>
+      <pubDate>Wed, 09 Mar 2016 00:11:02 +0100</pubDate>
+      
+      <guid>https://unixvoid.github.io/nsproxy/building/</guid>
+      <description>&lt;p&gt;This project requires golang to be installed with the dependencies in place.&lt;/p&gt;
+
+&lt;ul&gt;
+&lt;li&gt;To pull the dependencies on your box simply issue &lt;code&gt;make deps&lt;/code&gt; to do all the &lt;code&gt;go get&lt;/code&gt;s for you.&lt;br /&gt;&lt;/li&gt;
+&lt;li&gt;make will accept the following commands:&lt;br /&gt;
+
+&lt;ul&gt;
+&lt;li&gt;&lt;code&gt;make nsproxy&lt;/code&gt; will dynamically build nsproxy&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;make stat&lt;/code&gt; will statically build nsproxy&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;make stage&lt;/code&gt; will build and stage all files for preperation of building a
+container&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;make link&lt;/code&gt; will link the project to your GOPATH, this way if a pkg changes it will be updated in your GOPATH as well&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;make deps&lt;/code&gt; will do all the required &lt;code&gt;go get&lt;/code&gt;s for you&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;make populate&lt;/code&gt; will populate the local DNS server with entries for testing&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;make testhealthcheck&lt;/code&gt; will run a health check docker against a local version of nsproxy&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;make rmhealthcheck&lt;/code&gt; will remove the docker containers made by &lt;code&gt;testhealthcheck&lt;/code&gt;&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;make test&lt;/code&gt; will test against the entries added by &lt;code&gt;make populate&lt;/code&gt;&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;make docker&lt;/code&gt; will build a docker image.  You can specify a non default docker name by editing the &lt;code&gt;IMAGE_NAME&lt;/code&gt; field of the Makefile&lt;br /&gt;&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;make install&lt;/code&gt; will install the compiled nsproxy in /usr/bin/&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;make clean&lt;/code&gt; will clean the project of all tmp directories and binaries&lt;/li&gt;
+&lt;/ul&gt;&lt;/li&gt;
+&lt;/ul&gt;
+</description>
+    </item>
+    
+    <item>
+      <title>Configuring nsproxy</title>
+      <link>https://unixvoid.github.io/nsproxy/configuration/</link>
+      <pubDate>Wed, 09 Mar 2016 00:11:02 +0100</pubDate>
+      
+      <guid>https://unixvoid.github.io/nsproxy/configuration/</guid>
+      <description>&lt;p&gt;Nsproxy uses &lt;strong&gt;gcfg&lt;/strong&gt; (INI-style config files for go structs).&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;[server]
+	port				= 53
+	loglevel			= &amp;quot;cluster&amp;quot;
+
+[clustermanager]
+	useclustermanager	= true
+	port				= 8080
+	pingfreq			= 4
+	clientpingtype		= &amp;quot;port&amp;quot;
+	connectiondrain		= 10
+
+[dns]
+	ttl					= 60
+
+[upstreamdns]
+	server				= &amp;quot;8.8.8.8:53&amp;quot;
+
+[redis]
+	host				= &amp;quot;localhost:6379&amp;quot;
+	password			= &amp;quot;&amp;quot;
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;The config uses some pretty sane defaults but the following fields are configurable:&lt;/p&gt;
+
+&lt;ul&gt;
+&lt;li&gt;&lt;code&gt;[server]&lt;/code&gt;
+
+&lt;ul&gt;
+&lt;li&gt;&lt;code&gt;port:&lt;/code&gt;  the port the main DNS server listens on.&lt;br /&gt;&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;loglevel:&lt;/code&gt;  the verbosity of logs. acceptable fields are &amp;lsquo;info&amp;rsquo;, &amp;lsquo;cluster&amp;rsquo;, &amp;lsquo;debug&amp;rsquo;, and &amp;lsquo;error&amp;rsquo;.&lt;br /&gt;&lt;/li&gt;
+&lt;/ul&gt;&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;[clustermanager]&lt;/code&gt;
+
+&lt;ul&gt;
+&lt;li&gt;&lt;code&gt;useclustermanager:&lt;/code&gt;  whether or not to use the cluster manager. acceptable fields are &amp;lsquo;true&amp;rsquo; and &amp;lsquo;false&amp;rsquo;&lt;br /&gt;&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;port:&lt;/code&gt;  the port that cluster manager will listen on (this is what port clients use to check in)&lt;br /&gt;&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;pingfeq:&lt;/code&gt;  the ammout of time in between health checks (in seconds)&lt;br /&gt;&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;clientpingtype:&lt;/code&gt;  the type of ping to be used. acceptable fields are &amp;lsquo;icmp&amp;rsquo; and &amp;lsquo;port&amp;rsquo;.  If port is set, client must send &amp;lsquo;port&amp;rsquo; field in cluster registration.&lt;br /&gt;&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;connectiondrain:&lt;/code&gt;  the time in seconds for the connection to drain. this is a grace period between a bad health check and actually removing the host from rotation. set to 0 if this is uneeded.&lt;br /&gt;&lt;/li&gt;
+&lt;/ul&gt;&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;[dns]&lt;/code&gt;
+
+&lt;ul&gt;
+&lt;li&gt;&lt;code&gt;ttl:&lt;/code&gt;  the default time to live (in seconds) for dns entries&lt;br /&gt;&lt;/li&gt;
+&lt;/ul&gt;&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;[upstreamdns]&lt;/code&gt;
+
+&lt;ul&gt;
+&lt;li&gt;&lt;code&gt;server:&lt;/code&gt;  the dns server and port that nsproxy uses if it cannot find a match in the local database&lt;br /&gt;&lt;/li&gt;
+&lt;/ul&gt;&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;[redis]&lt;/code&gt;&lt;br /&gt;
+
+&lt;ul&gt;
+&lt;li&gt;&lt;code&gt;host:&lt;/code&gt;  this is the ip and port that the redis backend is running on&lt;br /&gt;&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;password:&lt;/code&gt;  password to the redis database if one exists&lt;/li&gt;
+&lt;/ul&gt;&lt;/li&gt;
+&lt;/ul&gt;
+</description>
+    </item>
+    
+    <item>
+      <title>Nsproxy Basic Usage</title>
+      <link>https://unixvoid.github.io/nsproxy/basic_usage/</link>
+      <pubDate>Wed, 09 Mar 2016 00:11:02 +0100</pubDate>
+      
+      <guid>https://unixvoid.github.io/nsproxy/basic_usage/</guid>
+      <description>&lt;p&gt;The following usage implies the default config file is being used.&lt;/p&gt;
+
+&lt;ul&gt;
+&lt;li&gt;On boot nsproxy will bind to two ports:&lt;br /&gt;
+
+&lt;ul&gt;
+&lt;li&gt;&lt;code&gt;53&lt;/code&gt; is used as the regular dns server.  This will act the same as any other dns server and allows for custom dns entries to be used.&lt;br /&gt;&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;8080&lt;/code&gt; is used as the cluster manager.  Clients should post to this port to bind with the dns server.&lt;br /&gt;&lt;/li&gt;
+&lt;/ul&gt;&lt;/li&gt;
+&lt;li&gt;DNS entries can be added in a similar fashion to registering a host.  A POST on the same port that the clustermanager is running on in the following format will add an entry to the dns server.&lt;br /&gt;
+
+&lt;ul&gt;
+&lt;li&gt;&lt;code&gt;/dns&lt;/code&gt; dnstype= domain= value=&lt;br /&gt;&lt;/li&gt;
+&lt;li&gt;example &lt;code&gt;curl -d dnstype=a domain=unixvoid.com value=192.168.1.80 localhost:8080/dns&lt;/code&gt;&lt;br /&gt;&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;/dns/rm&lt;/code&gt; dnstype= domain= will remove a dns entry (and all for a domain if &amp;lsquo;dnstype&amp;rsquo; not set)&lt;br /&gt;&lt;/li&gt;
+&lt;li&gt;example &lt;code&gt;curl -d dnstype=a domain=unixvoid.com localhost:8080/dns/rm&lt;/code&gt;&lt;br /&gt;&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;dns:&amp;lt;dns_type&amp;gt;:&amp;lt;fqdn&amp;gt;&lt;/code&gt; and the content being a valid A, AAAA, or CNAME entry.&lt;br /&gt;&lt;/li&gt;
+&lt;/ul&gt;&lt;/li&gt;
+&lt;li&gt;Here are some examples on what typical redis entries would look like.&lt;br /&gt;
+
+&lt;ul&gt;
+&lt;li&gt;entry: &lt;code&gt;dns:a:unixvoid.com.&lt;/code&gt; content: &lt;code&gt;67.3.192.22&lt;/code&gt;&lt;br /&gt;&lt;/li&gt;
+&lt;li&gt;entry: &lt;code&gt;dns:aaaa:unixvoid.com.&lt;/code&gt; content: &lt;code&gt;::1&lt;/code&gt;&lt;br /&gt;&lt;/li&gt;
+&lt;li&gt;entry: &lt;code&gt;dns:cname:unixvoid.com.&lt;/code&gt; content: &lt;code&gt;customlb.cname.&lt;/code&gt;&lt;br /&gt;&lt;/li&gt;
+&lt;/ul&gt;&lt;/li&gt;
+&lt;li&gt;To register a client with the cluster manager, the client will send a form
+(&lt;code&gt;application/x-www-form-urlencoded&lt;/code&gt;) to nsproxy with the following data.
+
+&lt;ul&gt;
+&lt;li&gt;&lt;code&gt;hostname&lt;/code&gt;:  the hostname of the box&lt;br /&gt;&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;cluster&lt;/code&gt;:  the intended cluster to join.&lt;br /&gt;&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;ip&lt;/code&gt;(optional):  ip (usefull when client is behind proxy/loadbalancer).&lt;br /&gt;&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;port&lt;/code&gt;(optional): port to tcp health check on, must be set if
+clientpingtype = port.&lt;br /&gt;&lt;/li&gt;
+&lt;li&gt;Both of these fields are required.&lt;br /&gt;&lt;/li&gt;
+&lt;/ul&gt;&lt;/li&gt;
+&lt;li&gt;A regular client registration looks like this:&lt;br /&gt;
+&lt;code&gt;curl -d hostname=nginx -d cluster=coreos unixvoid.com:8080&lt;/code&gt;  This will add the host &lt;code&gt;nginx&lt;/code&gt; to the cluster &lt;code&gt;coreos&lt;/code&gt;.  These names are arbitrary and can be anything.&lt;br /&gt;&lt;/li&gt;
+&lt;/ul&gt;
+</description>
+    </item>
+    
+    <item>
+      <title>REST API Endpoints</title>
+      <link>https://unixvoid.github.io/nsproxy/api/</link>
+      <pubDate>Wed, 09 Mar 2016 00:11:02 +0100</pubDate>
+      
+      <guid>https://unixvoid.github.io/nsproxy/api/</guid>
+      <description>
+
+&lt;h2 id=&#34;api&#34;&gt;API&lt;/h2&gt;
+
+&lt;p&gt;Nsproxy exposes an api for easy access to data and creating DNS records.  The following is the specification for endpoints and their protocols.&lt;/p&gt;
+
+&lt;h2 id=&#34;endpoints&#34;&gt;Endpoints&lt;/h2&gt;
+
+&lt;h2 id=&#34;get-description&#34;&gt;&lt;strong&gt;Get description&lt;/strong&gt;&lt;/h2&gt;
+
+&lt;p&gt;Returns registered id&amp;rsquo;s content&lt;/p&gt;
+
+&lt;ul&gt;
+&lt;li&gt;&lt;strong&gt;URL&lt;/strong&gt;&lt;br /&gt;
+/:registered_id&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;Method&lt;/strong&gt;&lt;br /&gt;
+&lt;code&gt;GET&lt;/code&gt;&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;Sample Call&lt;/strong&gt;&lt;br /&gt;
+&lt;code&gt;bash
+curl localhost:8080/unixvoid
+&lt;/code&gt;&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;h2 id=&#34;register-dns-entry&#34;&gt;&lt;strong&gt;Register DNS Entry&lt;/strong&gt;&lt;/h2&gt;
+
+&lt;p&gt;Register a host with the cluster manager&lt;/p&gt;
+
+&lt;ul&gt;
+&lt;li&gt;&lt;strong&gt;URL&lt;/strong&gt;&lt;br /&gt;
+/&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;Method&lt;/strong&gt;&lt;br /&gt;
+&lt;code&gt;POST&lt;/code&gt;&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;URL Params&lt;/strong&gt;&lt;br /&gt;
+&lt;strong&gt;Required:&lt;/strong&gt;&lt;br /&gt;
+&lt;code&gt;hostname&lt;/code&gt; : hostname of the box&lt;br /&gt;
+&lt;code&gt;cluster&lt;/code&gt;  : cluster the host is associated with&lt;br /&gt;
+&lt;code&gt;port&lt;/code&gt;     : port to health check on&lt;br /&gt;
+&lt;strong&gt;Optional&lt;/strong&gt;&lt;br /&gt;
+&lt;code&gt;ip&lt;/code&gt; : (optional) the ip the box is on, you only need to set this if the client is behind a firewall&lt;br /&gt;
+&lt;code&gt;weight&lt;/code&gt; : (optional) the weight of the box (for load balancing). This field defaults to &amp;lsquo;1&amp;rsquo;. This is how many load balance hits the box will receive in a row before continuing to the next live host&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;Sample Call&lt;/strong&gt;&lt;br /&gt;
+&lt;code&gt;bash
+curl -d hostname=$1 -d cluster=smartos -d port=7700 192.168.2.201:8080
+&lt;/code&gt;&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;h2 id=&#34;add-loadbalancer-entry&#34;&gt;&lt;strong&gt;Add Loadbalancer Entry&lt;/strong&gt;&lt;/h2&gt;
+
+&lt;p&gt;Register a DNS entry&lt;/p&gt;
+
+&lt;ul&gt;
+&lt;li&gt;&lt;strong&gt;URL&lt;/strong&gt;&lt;br /&gt;
+/dns&lt;br /&gt;&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;Method&lt;/strong&gt;&lt;br /&gt;
+&lt;code&gt;POST&lt;/code&gt;&lt;br /&gt;&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;URL Params&lt;/strong&gt;&lt;br /&gt;
+&lt;strong&gt;Required:&lt;/strong&gt;&lt;br /&gt;
+&lt;code&gt;dnstype&lt;/code&gt; : the type of request being made: supported {a, aaaa, cname}&lt;br /&gt;
+&lt;code&gt;domain&lt;/code&gt;  : domain name, this will be fully qualified by nsproxy if it is not already&lt;br /&gt;
+&lt;code&gt;value&lt;/code&gt;   : the entry value {ip4 address for &amp;lsquo;a&amp;rsquo;, ipv6 address for &amp;lsquo;aaaa&amp;rsquo;, aname for &amp;lsquo;aname&amp;rsquo;}&lt;br /&gt;&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;Sample Call&lt;/strong&gt;&lt;br /&gt;
+&lt;code&gt;bash
+curl -d dnstype=CNAME -d domain=bitnuke.io -d value=turbo.lb.bitnuke.io localhost:8080/dns
+&lt;/code&gt;&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;h2 id=&#34;remove-dns-entry&#34;&gt;&lt;strong&gt;Remove DNS Entry&lt;/strong&gt;&lt;/h2&gt;
+
+&lt;p&gt;Remove a DNS entry from the nameserver&lt;/p&gt;
+
+&lt;ul&gt;
+&lt;li&gt;&lt;strong&gt;URL&lt;/strong&gt;&lt;br /&gt;
+/dns/rm&lt;br /&gt;&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;Method&lt;/strong&gt;&lt;br /&gt;
+&lt;code&gt;POST&lt;/code&gt;&lt;br /&gt;&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;URL Params&lt;/strong&gt;&lt;br /&gt;
+&lt;strong&gt;Required:&lt;/strong&gt;&lt;br /&gt;
+&lt;code&gt;domain&lt;/code&gt; : the domain to remove entry for&lt;br /&gt;
+&lt;strong&gt;Optional:&lt;/strong&gt;&lt;br /&gt;
+&lt;code&gt;dnstype&lt;/code&gt; : (optional) dns request to remove {a, aaaa, cname}. If not set, will remove all three from the db for the domain&lt;br /&gt;&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;Sample Call&lt;/strong&gt;&lt;br /&gt;
+&lt;code&gt;bash
+curl -d dnstype=a -d domain=bitnuke.io localhost:8080/dns/rm
+&lt;/code&gt;&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;h2 id=&#34;get-cluster-metadata&#34;&gt;&lt;strong&gt;Get Cluster Metadata&lt;/strong&gt;&lt;/h2&gt;
+
+&lt;p&gt;Get metadata for a particular cluster (returns registred hosts)&lt;/p&gt;
+
+&lt;ul&gt;
+&lt;li&gt;&lt;strong&gt;URL&lt;/strong&gt;&lt;br /&gt;
+/clusterspec&lt;br /&gt;&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;Method&lt;/strong&gt;&lt;br /&gt;
+&lt;code&gt;POST&lt;/code&gt;&lt;br /&gt;&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;URL Params&lt;/strong&gt;&lt;br /&gt;
+&lt;strong&gt;Required:&lt;/strong&gt;&lt;br /&gt;
+&lt;code&gt;cluster&lt;/code&gt; : cluster name to get hosts for&lt;br /&gt;&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;Sample Call&lt;/strong&gt;&lt;br /&gt;
+&lt;code&gt;bash
+curl -d cluster=smartos localhost:8080/clusterspec
+&lt;/code&gt;&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;h2 id=&#34;get-host-metadata&#34;&gt;&lt;strong&gt;Get Host Metadata&lt;/strong&gt;&lt;/h2&gt;
+
+&lt;p&gt;Get metadata for a particular host (in a cluster)&lt;/p&gt;
+
+&lt;ul&gt;
+&lt;li&gt;&lt;strong&gt;URL&lt;/strong&gt;&lt;br /&gt;
+/hostspec&lt;br /&gt;&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;Method&lt;/strong&gt;&lt;br /&gt;
+&lt;code&gt;POST&lt;/code&gt;&lt;br /&gt;&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;URL Params&lt;/strong&gt;&lt;br /&gt;
+&lt;strong&gt;Required:&lt;/strong&gt;&lt;br /&gt;
+&lt;code&gt;cluster&lt;/code&gt; : cluster name that the host belongs to&lt;br /&gt;
+&lt;code&gt;host&lt;/code&gt; : hostname to get the ip of&lt;br /&gt;&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;Sample Call&lt;/strong&gt;&lt;br /&gt;
+&lt;code&gt;bash
+curl -d cluster=smartos -d host=test1 localhost:8080/hostspec
+&lt;/code&gt;&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;h2 id=&#34;get-dns-entry-metadata&#34;&gt;&lt;strong&gt;Get DNS entry metadata&lt;/strong&gt;&lt;/h2&gt;
+
+&lt;p&gt;Get information about a particular DNS entry (ie: A, AAAA, CNAME.. data)&lt;/p&gt;
+
+&lt;ul&gt;
+&lt;li&gt;&lt;strong&gt;URL&lt;/strong&gt;&lt;br /&gt;
+/dnstype&lt;br /&gt;&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;Method&lt;/strong&gt;&lt;br /&gt;
+&lt;code&gt;POST&lt;/code&gt;&lt;br /&gt;&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;URL Params&lt;/strong&gt;&lt;br /&gt;
+&lt;strong&gt;Required:&lt;/strong&gt;&lt;br /&gt;
+&lt;code&gt;dnstype&lt;/code&gt; : the dnstype of the entry, default is &amp;lsquo;A&amp;rsquo; if not set&lt;br /&gt;
+&lt;code&gt;domain&lt;/code&gt; : domain name of the entry to return&lt;br /&gt;&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;Sample Call&lt;/strong&gt;&lt;br /&gt;
+&lt;code&gt;bash
+curl -d dnstype=cname -d domain=google.com localhost:8080/dnsspec
+&lt;/code&gt;&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;h2 id=&#34;get-live-hosts&#34;&gt;&lt;strong&gt;Get Live Hosts&lt;/strong&gt;&lt;/h2&gt;
+
+&lt;p&gt;Get a list of all live hosts (in the format &lt;cluster&gt;:&lt;host&gt;)&lt;/p&gt;
+
+&lt;ul&gt;
+&lt;li&gt;&lt;strong&gt;URL&lt;/strong&gt;&lt;br /&gt;
+/hosts&lt;br /&gt;&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;Method&lt;/strong&gt;&lt;br /&gt;
+&lt;code&gt;GET&lt;/code&gt;&lt;br /&gt;&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;Sample Call&lt;/strong&gt;&lt;br /&gt;
+&lt;code&gt;bash
+curl localhost:8080/hosts
+&lt;/code&gt;&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;h2 id=&#34;get-live-clusters&#34;&gt;&lt;strong&gt;Get Live Clusters&lt;/strong&gt;&lt;/h2&gt;
+
+&lt;p&gt;Get a list of all live clusters&lt;/p&gt;
+
+&lt;ul&gt;
+&lt;li&gt;&lt;strong&gt;URL&lt;/strong&gt;&lt;br /&gt;
+/clusters&lt;br /&gt;&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;Method&lt;/strong&gt;&lt;br /&gt;
+&lt;code&gt;GET&lt;/code&gt;&lt;br /&gt;&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;Sample Call&lt;/strong&gt;&lt;br /&gt;
+&lt;code&gt;bash
+curl localhost:8080/clusters
+&lt;/code&gt;&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;h2 id=&#34;get-dns-entries&#34;&gt;&lt;strong&gt;Get DNS Entries&lt;/strong&gt;&lt;/h2&gt;
+
+&lt;p&gt;Get a list of all DNS Entries&lt;/p&gt;
+
+&lt;ul&gt;
+&lt;li&gt;&lt;strong&gt;URL&lt;/strong&gt;&lt;br /&gt;
+/dns&lt;br /&gt;&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;Method&lt;/strong&gt;&lt;br /&gt;
+&lt;code&gt;GET&lt;/code&gt;&lt;br /&gt;&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;Sample Call&lt;/strong&gt;&lt;br /&gt;
+&lt;code&gt;bash
+curl localhost:8080/dns
+&lt;/code&gt;&lt;/li&gt;
+&lt;/ul&gt;
+</description>
+    </item>
+    
+    <item>
+      <title>Redis Data Structures with nsproxy</title>
+      <link>https://unixvoid.github.io/nsproxy/redis_data_structures/</link>
+      <pubDate>Wed, 09 Mar 2016 00:11:02 +0100</pubDate>
+      
+      <guid>https://unixvoid.github.io/nsproxy/redis_data_structures/</guid>
+      <description>&lt;p&gt;This is designed to help the user understand what is going on inside of redis at a low level.  The following are redis keys (with examples) and what they store.&lt;/p&gt;
+
+&lt;ul&gt;
+&lt;li&gt;&lt;code&gt;cluster:&amp;lt;cluster_name&amp;gt;:&amp;lt;host_name&amp;gt;&lt;/code&gt; This is a low level entry that has a hostname&amp;rsquo;s ip
+
+&lt;ul&gt;
+&lt;li&gt;type: redis key&lt;/li&gt;
+&lt;li&gt;content: host ip&lt;/li&gt;
+&lt;li&gt;example &lt;code&gt;cluster:coreos:nginx&lt;/code&gt; 192.168.2.2&lt;/li&gt;
+&lt;/ul&gt;&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;port:&amp;lt;cluster_name&amp;gt;:&amp;lt;host_name&amp;gt;&lt;/code&gt; This is a low level entry that has a hostname&amp;rsquo;s port
+
+&lt;ul&gt;
+&lt;li&gt;type: redis key&lt;/li&gt;
+&lt;li&gt;content: host port&lt;/li&gt;
+&lt;li&gt;example &lt;code&gt;port:coreos:nginx&lt;/code&gt; 443&lt;/li&gt;
+&lt;/ul&gt;&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;index:cluster:&amp;lt;cluster_name&amp;gt;&lt;/code&gt; This is a medium level entry that contains the elements (hosts) that are in a cluster
+
+&lt;ul&gt;
+&lt;li&gt;type: redis set&lt;/li&gt;
+&lt;li&gt;content: cluster hosts&lt;/li&gt;
+&lt;li&gt;example &lt;code&gt;index:cluster:coreos&lt;/code&gt; {nginx, cApp, configServer}&lt;/li&gt;
+&lt;/ul&gt;&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;list:cluster:&amp;lt;cluster_name&amp;gt;&lt;/code&gt; This is a clone of the previous, used to hold order or load balanced hosts. This element stays in order to obey load balancer algoritms
+
+&lt;ul&gt;
+&lt;li&gt;type: redis unordered set (list)&lt;/li&gt;
+&lt;li&gt;content: cluster hosts&lt;/li&gt;
+&lt;li&gt;example &lt;code&gt;list:cluster:coreos&lt;/code&gt; {nginx, cApp, configServer}&lt;/li&gt;
+&lt;/ul&gt;&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;state:cluster:&amp;lt;cluster_name&amp;gt;&lt;/code&gt; This is a statefile for any draining host. When a host begins draining it adds itself the the state entry so a single box is not entered twice.
+
+&lt;ul&gt;
+&lt;li&gt;type: redis unordered set (list)&lt;/li&gt;
+&lt;li&gt;content: draining cluster ip:port&lt;/li&gt;
+&lt;li&gt;example &lt;code&gt;state:cluster:coreos&lt;/code&gt; {192.168.1.9:8080, 192.168.1.8:4410}&lt;/li&gt;
+&lt;/ul&gt;&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;index:master&lt;/code&gt; This a persistent index that hold a list of all clusters (this persists across nsproxy reboots)
+
+&lt;ul&gt;
+&lt;li&gt;type: redis set&lt;/li&gt;
+&lt;li&gt;content: clusters&lt;/li&gt;
+&lt;li&gt;example &lt;code&gt;index:master&lt;/code&gt; {coreos, neatCluster, ps2_cluster}&lt;/li&gt;
+&lt;/ul&gt;&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;index:live&lt;/code&gt; This is volitile entry that gets diffed against &lt;code&gt;index:master&lt;/code&gt; and only contains hosts that have live listeners
+
+&lt;ul&gt;
+&lt;li&gt;type: redis set&lt;/li&gt;
+&lt;li&gt;content: clusters&lt;/li&gt;
+&lt;li&gt;example &lt;code&gt;index:master&lt;/code&gt; {coreos, neatCluster, ps2_cluster}&lt;/li&gt;
+&lt;/ul&gt;&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;dns:&amp;lt;dns_type&amp;gt;:&amp;lt;domain&amp;gt;&lt;/code&gt; This is the standard dns entry&lt;br /&gt;
+
+&lt;ul&gt;
+&lt;li&gt;type: redis set&lt;br /&gt;&lt;/li&gt;
+&lt;li&gt;content: a, aaaa, cname entry&lt;br /&gt;&lt;/li&gt;
+&lt;li&gt;example &lt;code&gt;dns:a:unixvoid.com.&lt;/code&gt; 192.168.1.80&lt;br /&gt;&lt;/li&gt;
+&lt;/ul&gt;&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;weight:&amp;lt;cluster_name&amp;gt;:&amp;lt;host_name&amp;gt;&lt;/code&gt; This the entry that holds the master weight of the box for load balancing
+
+&lt;ul&gt;
+&lt;li&gt;type: redis key&lt;br /&gt;&lt;/li&gt;
+&lt;li&gt;content: the weight the box (defaults to 1)&lt;br /&gt;&lt;/li&gt;
+&lt;li&gt;example &lt;code&gt;weight:testapp:4146b6ec7810&lt;/code&gt; 5&lt;br /&gt;&lt;/li&gt;
+&lt;/ul&gt;&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;cweight:&amp;lt;cluster_name&amp;gt;:&amp;lt;host_name&amp;gt;&lt;/code&gt; This the entry that holds the current weight of the box for load balancing. This field is volitile
+
+&lt;ul&gt;
+&lt;li&gt;type: redis key&lt;br /&gt;&lt;/li&gt;
+&lt;li&gt;content: the current weight the box&lt;br /&gt;&lt;/li&gt;
+&lt;li&gt;example &lt;code&gt;cweight:testapp:4146b6ec7810&lt;/code&gt; 3&lt;br /&gt;&lt;/li&gt;
+&lt;/ul&gt;&lt;/li&gt;
+&lt;/ul&gt;
+</description>
+    </item>
+    
+    <item>
+      <title>DNS based load balancer</title>
+      <link>https://unixvoid.github.io/nsproxy/</link>
+      <pubDate>Tue, 08 Mar 2016 21:07:13 +0100</pubDate>
+      
+      <guid>https://unixvoid.github.io/nsproxy/</guid>
+      <description>
+
+&lt;h2 id=&#34;nsproxy-documentation&#34;&gt;Nsproxy documentation&lt;/h2&gt;
+
+&lt;p&gt;&lt;a href=&#34;https://travis-ci.org/unixvoid/nsproxy&#34;&gt;&lt;img src=&#34;https://travis-ci.org/unixvoid/nsproxy.svg?branch=develop&#34; alt=&#34;Build Status (Travis)&#34; /&gt;&lt;/a&gt;&lt;/p&gt;
+
+&lt;p&gt;Nsproxy is a DNS proxy and cluster manager written in go.  This project acts as
+a normal DNS server (in addition to the cluster managment) and allows the use of
+custom DNS entries.  Currently nsproxy fully supports A, AAAA, and CNAME
+entries.&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&#34;img/banner.png&#34; alt=&#34;Banner&#34; /&gt;&lt;/p&gt;
+
+&lt;h2 id=&#34;quick-start&#34;&gt;Quick start&lt;/h2&gt;
+
+&lt;p&gt;There are 3 main ways to run nsproxy:&lt;/p&gt;
+
+&lt;ol&gt;
+&lt;li&gt;&lt;p&gt;&lt;strong&gt;Docker&lt;/strong&gt;:&lt;br /&gt;
+we have nsproxy pre-packaged over on the &lt;a href=&#34;https://hub.docker.com/r/unixvoid/nsproxy/&#34;&gt;dockerhub&lt;/a&gt;, go grab the latest and run:&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-bash&#34;&gt;docker run -d -p 8080:8080 -p 53:53 unixvoid/nsproxy
+&lt;/code&gt;&lt;/pre&gt;&lt;/li&gt;
+
+&lt;li&gt;&lt;p&gt;&lt;strong&gt;ACI/rkt&lt;/strong&gt;:&lt;br /&gt;
+we have public rkt images hosted on the site! check them out &lt;a href=&#34;https://cryo.unixvoid.com/bin/rkt/nsproxy/&#34;&gt;here&lt;/a&gt; or go give us a fetch for 64bit machines!&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-bash&#34;&gt;rkt fetch unixvoid.com/nsproxy
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;This image can be run with rkt or you can
+grab our handy &lt;a href=&#34;https://github.com/unixvoid/cryodns/blob/master/deps/cryodns.service&#34;&gt;service file&lt;/a&gt;&lt;/p&gt;&lt;/li&gt;
+
+&lt;li&gt;&lt;p&gt;&lt;strong&gt;From Source&lt;/strong&gt;:&lt;br /&gt;
+Are we not compiled for your architecture? Wanna hack on the source?  Lets bulid and deploy:&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-bash&#34;&gt;make dependencies
+make run
+&lt;/code&gt;&lt;/pre&gt;&lt;/li&gt;
+&lt;/ol&gt;
+
+&lt;p&gt;If you want to build a docker use: &lt;code&gt;make docker&lt;/code&gt;&lt;br /&gt;
+  If you want to build an ACI use: &lt;code&gt;make aci&lt;/code&gt;&lt;/p&gt;
+
+&lt;h2 id=&#34;acknowledgements&#34;&gt;Acknowledgements&lt;/h2&gt;
+
+&lt;p&gt;Big shoutout to the guys over at miekg, this project makes use of their &lt;a href=&#34;https://github.com/miekg/dns&#34;&gt;dns library&lt;/a&gt; for go.&lt;/p&gt;
+</description>
+    </item>
+    
+  </channel>
+</rss>

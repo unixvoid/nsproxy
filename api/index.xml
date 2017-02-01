@@ -1,0 +1,209 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>Apis on nsproxy-docs</title>
+    <link>https://unixvoid.github.io/nsproxy/api/index.xml</link>
+    <description>Recent content in Apis on nsproxy-docs</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>en-us</language>
+    <copyright>Released under the MIT license</copyright>
+    <lastBuildDate>Wed, 09 Mar 2016 00:11:02 +0100</lastBuildDate>
+    <atom:link href="https://unixvoid.github.io/nsproxy/api/index.xml" rel="self" type="application/rss+xml" />
+    
+    <item>
+      <title>REST API Endpoints</title>
+      <link>https://unixvoid.github.io/nsproxy/api/</link>
+      <pubDate>Wed, 09 Mar 2016 00:11:02 +0100</pubDate>
+      
+      <guid>https://unixvoid.github.io/nsproxy/api/</guid>
+      <description>
+
+&lt;h2 id=&#34;api&#34;&gt;API&lt;/h2&gt;
+
+&lt;p&gt;Nsproxy exposes an api for easy access to data and creating DNS records.  The following is the specification for endpoints and their protocols.&lt;/p&gt;
+
+&lt;h2 id=&#34;endpoints&#34;&gt;Endpoints&lt;/h2&gt;
+
+&lt;h2 id=&#34;get-description&#34;&gt;&lt;strong&gt;Get description&lt;/strong&gt;&lt;/h2&gt;
+
+&lt;p&gt;Returns registered id&amp;rsquo;s content&lt;/p&gt;
+
+&lt;ul&gt;
+&lt;li&gt;&lt;strong&gt;URL&lt;/strong&gt;&lt;br /&gt;
+/:registered_id&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;Method&lt;/strong&gt;&lt;br /&gt;
+&lt;code&gt;GET&lt;/code&gt;&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;Sample Call&lt;/strong&gt;&lt;br /&gt;
+&lt;code&gt;bash
+curl localhost:8080/unixvoid
+&lt;/code&gt;&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;h2 id=&#34;register-dns-entry&#34;&gt;&lt;strong&gt;Register DNS Entry&lt;/strong&gt;&lt;/h2&gt;
+
+&lt;p&gt;Register a host with the cluster manager&lt;/p&gt;
+
+&lt;ul&gt;
+&lt;li&gt;&lt;strong&gt;URL&lt;/strong&gt;&lt;br /&gt;
+/&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;Method&lt;/strong&gt;&lt;br /&gt;
+&lt;code&gt;POST&lt;/code&gt;&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;URL Params&lt;/strong&gt;&lt;br /&gt;
+&lt;strong&gt;Required:&lt;/strong&gt;&lt;br /&gt;
+&lt;code&gt;hostname&lt;/code&gt; : hostname of the box&lt;br /&gt;
+&lt;code&gt;cluster&lt;/code&gt;  : cluster the host is associated with&lt;br /&gt;
+&lt;code&gt;port&lt;/code&gt;     : port to health check on&lt;br /&gt;
+&lt;strong&gt;Optional&lt;/strong&gt;&lt;br /&gt;
+&lt;code&gt;ip&lt;/code&gt; : (optional) the ip the box is on, you only need to set this if the client is behind a firewall&lt;br /&gt;
+&lt;code&gt;weight&lt;/code&gt; : (optional) the weight of the box (for load balancing). This field defaults to &amp;lsquo;1&amp;rsquo;. This is how many load balance hits the box will receive in a row before continuing to the next live host&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;Sample Call&lt;/strong&gt;&lt;br /&gt;
+&lt;code&gt;bash
+curl -d hostname=$1 -d cluster=smartos -d port=7700 192.168.2.201:8080
+&lt;/code&gt;&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;h2 id=&#34;add-loadbalancer-entry&#34;&gt;&lt;strong&gt;Add Loadbalancer Entry&lt;/strong&gt;&lt;/h2&gt;
+
+&lt;p&gt;Register a DNS entry&lt;/p&gt;
+
+&lt;ul&gt;
+&lt;li&gt;&lt;strong&gt;URL&lt;/strong&gt;&lt;br /&gt;
+/dns&lt;br /&gt;&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;Method&lt;/strong&gt;&lt;br /&gt;
+&lt;code&gt;POST&lt;/code&gt;&lt;br /&gt;&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;URL Params&lt;/strong&gt;&lt;br /&gt;
+&lt;strong&gt;Required:&lt;/strong&gt;&lt;br /&gt;
+&lt;code&gt;dnstype&lt;/code&gt; : the type of request being made: supported {a, aaaa, cname}&lt;br /&gt;
+&lt;code&gt;domain&lt;/code&gt;  : domain name, this will be fully qualified by nsproxy if it is not already&lt;br /&gt;
+&lt;code&gt;value&lt;/code&gt;   : the entry value {ip4 address for &amp;lsquo;a&amp;rsquo;, ipv6 address for &amp;lsquo;aaaa&amp;rsquo;, aname for &amp;lsquo;aname&amp;rsquo;}&lt;br /&gt;&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;Sample Call&lt;/strong&gt;&lt;br /&gt;
+&lt;code&gt;bash
+curl -d dnstype=CNAME -d domain=bitnuke.io -d value=turbo.lb.bitnuke.io localhost:8080/dns
+&lt;/code&gt;&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;h2 id=&#34;remove-dns-entry&#34;&gt;&lt;strong&gt;Remove DNS Entry&lt;/strong&gt;&lt;/h2&gt;
+
+&lt;p&gt;Remove a DNS entry from the nameserver&lt;/p&gt;
+
+&lt;ul&gt;
+&lt;li&gt;&lt;strong&gt;URL&lt;/strong&gt;&lt;br /&gt;
+/dns/rm&lt;br /&gt;&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;Method&lt;/strong&gt;&lt;br /&gt;
+&lt;code&gt;POST&lt;/code&gt;&lt;br /&gt;&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;URL Params&lt;/strong&gt;&lt;br /&gt;
+&lt;strong&gt;Required:&lt;/strong&gt;&lt;br /&gt;
+&lt;code&gt;domain&lt;/code&gt; : the domain to remove entry for&lt;br /&gt;
+&lt;strong&gt;Optional:&lt;/strong&gt;&lt;br /&gt;
+&lt;code&gt;dnstype&lt;/code&gt; : (optional) dns request to remove {a, aaaa, cname}. If not set, will remove all three from the db for the domain&lt;br /&gt;&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;Sample Call&lt;/strong&gt;&lt;br /&gt;
+&lt;code&gt;bash
+curl -d dnstype=a -d domain=bitnuke.io localhost:8080/dns/rm
+&lt;/code&gt;&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;h2 id=&#34;get-cluster-metadata&#34;&gt;&lt;strong&gt;Get Cluster Metadata&lt;/strong&gt;&lt;/h2&gt;
+
+&lt;p&gt;Get metadata for a particular cluster (returns registred hosts)&lt;/p&gt;
+
+&lt;ul&gt;
+&lt;li&gt;&lt;strong&gt;URL&lt;/strong&gt;&lt;br /&gt;
+/clusterspec&lt;br /&gt;&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;Method&lt;/strong&gt;&lt;br /&gt;
+&lt;code&gt;POST&lt;/code&gt;&lt;br /&gt;&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;URL Params&lt;/strong&gt;&lt;br /&gt;
+&lt;strong&gt;Required:&lt;/strong&gt;&lt;br /&gt;
+&lt;code&gt;cluster&lt;/code&gt; : cluster name to get hosts for&lt;br /&gt;&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;Sample Call&lt;/strong&gt;&lt;br /&gt;
+&lt;code&gt;bash
+curl -d cluster=smartos localhost:8080/clusterspec
+&lt;/code&gt;&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;h2 id=&#34;get-host-metadata&#34;&gt;&lt;strong&gt;Get Host Metadata&lt;/strong&gt;&lt;/h2&gt;
+
+&lt;p&gt;Get metadata for a particular host (in a cluster)&lt;/p&gt;
+
+&lt;ul&gt;
+&lt;li&gt;&lt;strong&gt;URL&lt;/strong&gt;&lt;br /&gt;
+/hostspec&lt;br /&gt;&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;Method&lt;/strong&gt;&lt;br /&gt;
+&lt;code&gt;POST&lt;/code&gt;&lt;br /&gt;&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;URL Params&lt;/strong&gt;&lt;br /&gt;
+&lt;strong&gt;Required:&lt;/strong&gt;&lt;br /&gt;
+&lt;code&gt;cluster&lt;/code&gt; : cluster name that the host belongs to&lt;br /&gt;
+&lt;code&gt;host&lt;/code&gt; : hostname to get the ip of&lt;br /&gt;&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;Sample Call&lt;/strong&gt;&lt;br /&gt;
+&lt;code&gt;bash
+curl -d cluster=smartos -d host=test1 localhost:8080/hostspec
+&lt;/code&gt;&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;h2 id=&#34;get-dns-entry-metadata&#34;&gt;&lt;strong&gt;Get DNS entry metadata&lt;/strong&gt;&lt;/h2&gt;
+
+&lt;p&gt;Get information about a particular DNS entry (ie: A, AAAA, CNAME.. data)&lt;/p&gt;
+
+&lt;ul&gt;
+&lt;li&gt;&lt;strong&gt;URL&lt;/strong&gt;&lt;br /&gt;
+/dnstype&lt;br /&gt;&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;Method&lt;/strong&gt;&lt;br /&gt;
+&lt;code&gt;POST&lt;/code&gt;&lt;br /&gt;&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;URL Params&lt;/strong&gt;&lt;br /&gt;
+&lt;strong&gt;Required:&lt;/strong&gt;&lt;br /&gt;
+&lt;code&gt;dnstype&lt;/code&gt; : the dnstype of the entry, default is &amp;lsquo;A&amp;rsquo; if not set&lt;br /&gt;
+&lt;code&gt;domain&lt;/code&gt; : domain name of the entry to return&lt;br /&gt;&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;Sample Call&lt;/strong&gt;&lt;br /&gt;
+&lt;code&gt;bash
+curl -d dnstype=cname -d domain=google.com localhost:8080/dnsspec
+&lt;/code&gt;&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;h2 id=&#34;get-live-hosts&#34;&gt;&lt;strong&gt;Get Live Hosts&lt;/strong&gt;&lt;/h2&gt;
+
+&lt;p&gt;Get a list of all live hosts (in the format &lt;cluster&gt;:&lt;host&gt;)&lt;/p&gt;
+
+&lt;ul&gt;
+&lt;li&gt;&lt;strong&gt;URL&lt;/strong&gt;&lt;br /&gt;
+/hosts&lt;br /&gt;&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;Method&lt;/strong&gt;&lt;br /&gt;
+&lt;code&gt;GET&lt;/code&gt;&lt;br /&gt;&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;Sample Call&lt;/strong&gt;&lt;br /&gt;
+&lt;code&gt;bash
+curl localhost:8080/hosts
+&lt;/code&gt;&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;h2 id=&#34;get-live-clusters&#34;&gt;&lt;strong&gt;Get Live Clusters&lt;/strong&gt;&lt;/h2&gt;
+
+&lt;p&gt;Get a list of all live clusters&lt;/p&gt;
+
+&lt;ul&gt;
+&lt;li&gt;&lt;strong&gt;URL&lt;/strong&gt;&lt;br /&gt;
+/clusters&lt;br /&gt;&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;Method&lt;/strong&gt;&lt;br /&gt;
+&lt;code&gt;GET&lt;/code&gt;&lt;br /&gt;&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;Sample Call&lt;/strong&gt;&lt;br /&gt;
+&lt;code&gt;bash
+curl localhost:8080/clusters
+&lt;/code&gt;&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;h2 id=&#34;get-dns-entries&#34;&gt;&lt;strong&gt;Get DNS Entries&lt;/strong&gt;&lt;/h2&gt;
+
+&lt;p&gt;Get a list of all DNS Entries&lt;/p&gt;
+
+&lt;ul&gt;
+&lt;li&gt;&lt;strong&gt;URL&lt;/strong&gt;&lt;br /&gt;
+/dns&lt;br /&gt;&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;Method&lt;/strong&gt;&lt;br /&gt;
+&lt;code&gt;GET&lt;/code&gt;&lt;br /&gt;&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;Sample Call&lt;/strong&gt;&lt;br /&gt;
+&lt;code&gt;bash
+curl localhost:8080/dns
+&lt;/code&gt;&lt;/li&gt;
+&lt;/ul&gt;
+</description>
+    </item>
+    
+  </channel>
+</rss>

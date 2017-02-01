@@ -1,0 +1,650 @@
+<!DOCTYPE html>
+  
+  
+  
+  
+   <html class="no-js"> 
+
+  <head lang="en-us">
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,user-scalable=no,initial-scale=1,maximum-scale=1">
+    <meta http-equiv="X-UA-Compatible" content="IE=10" />
+    <title>REST API Endpoints - nsproxy-docs</title>
+    <meta name="generator" content="Hugo 0.18.1" />
+
+    
+    <meta name="description" content="Nsproxy documentation.">
+    
+    <link rel="canonical" href="https://unixvoid.github.io/nsproxy/api/">
+    
+    <meta name="author" content="Matthew Faltys">
+    
+
+    <meta property="og:url" content="https://unixvoid.github.io/nsproxy/api/">
+    <meta property="og:title" content="nsproxy-docs">
+    <meta property="og:image" content="https://unixvoid.github.io/img/logo.png">
+    <meta name="apple-mobile-web-app-title" content="nsproxy-docs">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+
+    <link rel="shortcut icon" type="image/x-icon" href="https://unixvoid.github.io/nsproxy/images/favicon.ico">
+    <link rel="icon" type="image/x-icon" href="https://unixvoid.github.io/nsproxy/images/favicon.ico">
+
+    <style>
+      @font-face {
+        font-family: 'Icon';
+        src: url('https://unixvoid.github.io/nsproxy/fonts/icon.eot');
+        src: url('https://unixvoid.github.io/nsproxy/fonts/icon.eot')
+               format('embedded-opentype'),
+             url('https://unixvoid.github.io/nsproxy/fonts/icon.woff')
+               format('woff'),
+             url('https://unixvoid.github.io/nsproxy/fonts/icon.ttf')
+               format('truetype'),
+             url('https://unixvoid.github.io/nsproxy/fonts/icon.svg')
+               format('svg');
+        font-weight: normal;
+        font-style: normal;
+      }
+    </style>
+
+    <link rel="stylesheet" href="https://unixvoid.github.io/nsproxy/stylesheets/application.css">
+    <link rel="stylesheet" href="https://unixvoid.github.io/nsproxy/stylesheets/temporary.css">
+    <link rel="stylesheet" href="https://unixvoid.github.io/nsproxy/stylesheets/palettes.css">
+    <link rel="stylesheet" href="https://unixvoid.github.io/nsproxy/stylesheets/highlight/highlight.css">
+
+    
+    
+    
+    <link rel="stylesheet" href="//fonts.googleapis.com/css?family=Source%20Sans%20Pro:400,700|Source&#43;Code&#43;Pro">
+    <style>
+      body, input {
+        font-family: 'Source Sans Pro', Helvetica, Arial, sans-serif;
+      }
+      pre, code {
+        font-family: 'Source Code Pro', 'Courier New', 'Courier', monospace;
+      }
+    </style>
+
+    
+    <script src="https://unixvoid.github.io/nsproxy/javascripts/modernizr.js"></script>
+
+    
+
+  </head>
+  <body class="palette-primary-indigo palette-accent-teal">
+
+
+
+	
+	
+
+
+<div class="backdrop">
+	<div class="backdrop-paper"></div>
+</div>
+
+<input class="toggle" type="checkbox" id="toggle-drawer">
+<input class="toggle" type="checkbox" id="toggle-search">
+<label class="toggle-button overlay" for="toggle-drawer"></label>
+
+<header class="header">
+	<nav aria-label="Header">
+  <div class="bar default">
+    <div class="button button-menu" role="button" aria-label="Menu">
+      <label class="toggle-button icon icon-menu" for="toggle-drawer">
+        <span></span>
+      </label>
+    </div>
+    <div class="stretch">
+      <div class="title">
+        REST API Endpoints
+      </div>
+    </div>
+
+    
+    <div class="button button-twitter" role="button" aria-label="Twitter">
+       <a href="https://twitter.com/thefaltyone" title="@thefaltyone on Twitter" target="_blank" class="toggle-button icon icon-twitter"></a>
+    </div>
+    
+
+    
+    <div class="button button-github" role="button" aria-label="GitHub">
+      <a href="https://github.com/mfaltys" title="@mfaltys on GitHub" target="_blank" class="toggle-button icon icon-github"></a>
+    </div>
+    
+    
+        
+  </div>
+  <div class="bar search">
+    <div class="button button-close" role="button" aria-label="Close">
+      <label class="toggle-button icon icon-back" for="toggle-search"></label>
+    </div>
+    <div class="stretch">
+      <div class="field">
+        <input class="query" type="text" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck>
+      </div>
+    </div>
+    <div class="button button-reset" role="button" aria-label="Search">
+      <button class="toggle-button icon icon-close" id="reset-search"></button>
+    </div>
+  </div>
+</nav>
+</header>
+
+<main class="main">
+	<div class="drawer">
+		<nav aria-label="Navigation">
+  <a href="https://github.com/unixvoid/nsproxy" class="project">
+    <div class="banner">
+      
+        <div class="logo">
+          <img src="https://unixvoid.github.io/nsproxy/img/logo.png">
+        </div>
+      
+      <div class="name">
+        <strong>nsproxy-docs <span class="version">v0.0.3a</span></strong>
+        
+          <br>
+          unixvoid/nsproxy
+        
+      </div>
+    </div>
+  </a>
+
+  <div class="scrollable">
+    <div class="wrapper">
+      
+        <ul class="repo">
+          <li class="repo-download">
+            <a href="https://github.com/unixvoid/nsproxy/archive/master.zip" target="_blank" title="Download" data-action="download">
+              <i class="icon icon-download"></i> Download
+            </a>
+          </li>
+          <li class="repo-stars">
+            <a href="https://github.com/unixvoid/nsproxy/stargazers" target="_blank" title="Stargazers" data-action="star">
+              <i class="icon icon-star"></i> Stars
+              <span class="count">&ndash;</span>
+            </a>
+          </li>
+        </ul>
+        <hr>
+      
+
+      <div class="toc">
+        
+        <ul>
+          
+
+
+
+
+<li>
+  
+    
+
+
+
+<a  title="Nsproxy" href="https://unixvoid.github.io/nsproxy/">
+	
+	Nsproxy
+</a>
+
+
+
+  
+</li>
+
+
+
+<li>
+  
+    
+
+
+
+<a class="current" title="API" href="https://unixvoid.github.io/nsproxy/api/">
+	
+	API
+</a>
+
+
+<ul id="scrollspy">
+</ul>
+
+
+  
+</li>
+
+
+
+<li>
+  
+    
+
+
+
+<a  title="Basic Usage" href="https://unixvoid.github.io/nsproxy/basic_usage/">
+	
+	Basic Usage
+</a>
+
+
+
+  
+</li>
+
+
+
+<li>
+  
+    
+
+
+
+<a  title="Building" href="https://unixvoid.github.io/nsproxy/building/">
+	
+	Building
+</a>
+
+
+
+  
+</li>
+
+
+
+<li>
+  
+    
+
+
+
+<a  title="Configuration" href="https://unixvoid.github.io/nsproxy/configuration/">
+	
+	Configuration
+</a>
+
+
+
+  
+</li>
+
+
+
+<li>
+  
+    
+
+
+
+<a  title="Redis Data Structures" href="https://unixvoid.github.io/nsproxy/redis_data_structures/">
+	
+	Redis Data Structures
+</a>
+
+
+
+  
+</li>
+
+
+        </ul>
+        
+
+        
+        <hr>
+        <span class="section">The author</span>
+        
+        <ul>
+          
+          <li>
+            <a href="https://twitter.com/thefaltyone" target="_blank" title="@thefaltyone on Twitter">
+              @thefaltyone on Twitter
+            </a>
+          </li>
+          
+
+          
+          <li>
+            <a href="https://github.com/mfaltys" target="_blank" title="@mfaltys on GitHub">
+              @mfaltys on GitHub
+            </a>
+          </li>
+          
+
+          
+          <li>
+            <a href="mailto:mfaltys@gmail.com" title="Email of mfaltys@gmail.com">
+              Contact via email
+            </a>
+          </li>
+          
+        </ul>
+        
+      </div>
+    </div>
+  </div>
+</nav>
+
+	</div>
+
+	<article class="article">
+		<div class="wrapper">
+			<h1>REST API Endpoints </h1>
+
+			
+
+<h2 id="api">API</h2>
+
+<p>Nsproxy exposes an api for easy access to data and creating DNS records.  The following is the specification for endpoints and their protocols.</p>
+
+<h2 id="endpoints">Endpoints</h2>
+
+<h2 id="get-description"><strong>Get description</strong></h2>
+
+<p>Returns registered id&rsquo;s content</p>
+
+<ul>
+<li><strong>URL</strong><br />
+/:registered_id</li>
+<li><strong>Method</strong><br />
+<code>GET</code></li>
+<li><strong>Sample Call</strong><br />
+<code>bash
+curl localhost:8080/unixvoid
+</code></li>
+</ul>
+
+<h2 id="register-dns-entry"><strong>Register DNS Entry</strong></h2>
+
+<p>Register a host with the cluster manager</p>
+
+<ul>
+<li><strong>URL</strong><br />
+/</li>
+<li><strong>Method</strong><br />
+<code>POST</code></li>
+<li><strong>URL Params</strong><br />
+<strong>Required:</strong><br />
+<code>hostname</code> : hostname of the box<br />
+<code>cluster</code>  : cluster the host is associated with<br />
+<code>port</code>     : port to health check on<br />
+<strong>Optional</strong><br />
+<code>ip</code> : (optional) the ip the box is on, you only need to set this if the client is behind a firewall<br />
+<code>weight</code> : (optional) the weight of the box (for load balancing). This field defaults to &lsquo;1&rsquo;. This is how many load balance hits the box will receive in a row before continuing to the next live host</li>
+<li><strong>Sample Call</strong><br />
+<code>bash
+curl -d hostname=$1 -d cluster=smartos -d port=7700 192.168.2.201:8080
+</code></li>
+</ul>
+
+<h2 id="add-loadbalancer-entry"><strong>Add Loadbalancer Entry</strong></h2>
+
+<p>Register a DNS entry</p>
+
+<ul>
+<li><strong>URL</strong><br />
+/dns<br /></li>
+<li><strong>Method</strong><br />
+<code>POST</code><br /></li>
+<li><strong>URL Params</strong><br />
+<strong>Required:</strong><br />
+<code>dnstype</code> : the type of request being made: supported {a, aaaa, cname}<br />
+<code>domain</code>  : domain name, this will be fully qualified by nsproxy if it is not already<br />
+<code>value</code>   : the entry value {ip4 address for &lsquo;a&rsquo;, ipv6 address for &lsquo;aaaa&rsquo;, aname for &lsquo;aname&rsquo;}<br /></li>
+<li><strong>Sample Call</strong><br />
+<code>bash
+curl -d dnstype=CNAME -d domain=bitnuke.io -d value=turbo.lb.bitnuke.io localhost:8080/dns
+</code></li>
+</ul>
+
+<h2 id="remove-dns-entry"><strong>Remove DNS Entry</strong></h2>
+
+<p>Remove a DNS entry from the nameserver</p>
+
+<ul>
+<li><strong>URL</strong><br />
+/dns/rm<br /></li>
+<li><strong>Method</strong><br />
+<code>POST</code><br /></li>
+<li><strong>URL Params</strong><br />
+<strong>Required:</strong><br />
+<code>domain</code> : the domain to remove entry for<br />
+<strong>Optional:</strong><br />
+<code>dnstype</code> : (optional) dns request to remove {a, aaaa, cname}. If not set, will remove all three from the db for the domain<br /></li>
+<li><strong>Sample Call</strong><br />
+<code>bash
+curl -d dnstype=a -d domain=bitnuke.io localhost:8080/dns/rm
+</code></li>
+</ul>
+
+<h2 id="get-cluster-metadata"><strong>Get Cluster Metadata</strong></h2>
+
+<p>Get metadata for a particular cluster (returns registred hosts)</p>
+
+<ul>
+<li><strong>URL</strong><br />
+/clusterspec<br /></li>
+<li><strong>Method</strong><br />
+<code>POST</code><br /></li>
+<li><strong>URL Params</strong><br />
+<strong>Required:</strong><br />
+<code>cluster</code> : cluster name to get hosts for<br /></li>
+<li><strong>Sample Call</strong><br />
+<code>bash
+curl -d cluster=smartos localhost:8080/clusterspec
+</code></li>
+</ul>
+
+<h2 id="get-host-metadata"><strong>Get Host Metadata</strong></h2>
+
+<p>Get metadata for a particular host (in a cluster)</p>
+
+<ul>
+<li><strong>URL</strong><br />
+/hostspec<br /></li>
+<li><strong>Method</strong><br />
+<code>POST</code><br /></li>
+<li><strong>URL Params</strong><br />
+<strong>Required:</strong><br />
+<code>cluster</code> : cluster name that the host belongs to<br />
+<code>host</code> : hostname to get the ip of<br /></li>
+<li><strong>Sample Call</strong><br />
+<code>bash
+curl -d cluster=smartos -d host=test1 localhost:8080/hostspec
+</code></li>
+</ul>
+
+<h2 id="get-dns-entry-metadata"><strong>Get DNS entry metadata</strong></h2>
+
+<p>Get information about a particular DNS entry (ie: A, AAAA, CNAME.. data)</p>
+
+<ul>
+<li><strong>URL</strong><br />
+/dnstype<br /></li>
+<li><strong>Method</strong><br />
+<code>POST</code><br /></li>
+<li><strong>URL Params</strong><br />
+<strong>Required:</strong><br />
+<code>dnstype</code> : the dnstype of the entry, default is &lsquo;A&rsquo; if not set<br />
+<code>domain</code> : domain name of the entry to return<br /></li>
+<li><strong>Sample Call</strong><br />
+<code>bash
+curl -d dnstype=cname -d domain=google.com localhost:8080/dnsspec
+</code></li>
+</ul>
+
+<h2 id="get-live-hosts"><strong>Get Live Hosts</strong></h2>
+
+<p>Get a list of all live hosts (in the format <cluster>:<host>)</p>
+
+<ul>
+<li><strong>URL</strong><br />
+/hosts<br /></li>
+<li><strong>Method</strong><br />
+<code>GET</code><br /></li>
+<li><strong>Sample Call</strong><br />
+<code>bash
+curl localhost:8080/hosts
+</code></li>
+</ul>
+
+<h2 id="get-live-clusters"><strong>Get Live Clusters</strong></h2>
+
+<p>Get a list of all live clusters</p>
+
+<ul>
+<li><strong>URL</strong><br />
+/clusters<br /></li>
+<li><strong>Method</strong><br />
+<code>GET</code><br /></li>
+<li><strong>Sample Call</strong><br />
+<code>bash
+curl localhost:8080/clusters
+</code></li>
+</ul>
+
+<h2 id="get-dns-entries"><strong>Get DNS Entries</strong></h2>
+
+<p>Get a list of all DNS Entries</p>
+
+<ul>
+<li><strong>URL</strong><br />
+/dns<br /></li>
+<li><strong>Method</strong><br />
+<code>GET</code><br /></li>
+<li><strong>Sample Call</strong><br />
+<code>bash
+curl localhost:8080/dns
+</code></li>
+</ul>
+
+
+			<aside class="copyright" role="note">
+				
+				&copy; 2017 Released under the MIT license &ndash;
+				
+				Documentation built with
+				<a href="https://www.gohugo.io" target="_blank">Hugo</a>
+				using the
+				<a href="http://github.com/digitalcraftsman/hugo-material-docs" target="_blank">Material</a> theme.
+			</aside>
+
+			<footer class="footer">
+				
+
+<nav class="pagination" aria-label="Footer">
+  <div class="previous">
+  
+      <a href="https://unixvoid.github.io/nsproxy/basic_usage/" title="Nsproxy Basic Usage">
+        <span class="direction">
+          Previous
+        </span>
+        <div class="page">
+          <div class="button button-previous" role="button" aria-label="Previous">
+            <i class="icon icon-back"></i>
+          </div>
+          <div class="stretch">
+            <div class="title">
+              Nsproxy Basic Usage
+            </div>
+          </div>
+        </div>
+      </a>
+  
+  </div>
+
+  <div class="next">
+  
+      <a href="https://unixvoid.github.io/nsproxy/redis_data_structures/" title="Redis Data Structures with nsproxy">
+        <span class="direction">
+          Next
+        </span>
+        <div class="page">
+          <div class="stretch">
+            <div class="title">
+              Redis Data Structures with nsproxy
+            </div>
+          </div>
+          <div class="button button-next" role="button" aria-label="Next">
+            <i class="icon icon-forward"></i>
+          </div>
+        </div>
+      </a>
+  
+  </div>
+</nav>
+
+
+
+
+
+			</footer>
+		</div>
+	</article>
+
+	<div class="results" role="status" aria-live="polite">
+		<div class="scrollable">
+			<div class="wrapper">
+				<div class="meta"></div>
+				<div class="list"></div>
+			</div>
+		</div>
+	</div>
+</main>
+
+    <script>
+    
+      var base_url = 'https:\/\/unixvoid.github.io\/nsproxy';
+      var repo_id  = 'unixvoid\/nsproxy';
+    
+    </script>
+
+    <script src="https://unixvoid.github.io/nsproxy/javascripts/application.js"></script>
+    
+
+    <script>
+      /* Add headers to scrollspy */
+      var headers   = document.getElementsByTagName("h2");
+      var scrollspy = document.getElementById('scrollspy');
+
+      if(scrollspy) {
+        if(headers.length > 0) {
+          for(var i = 0; i < headers.length; i++) {
+            var li = document.createElement("li");
+            li.setAttribute("class", "anchor");
+
+            var a  = document.createElement("a");
+            a.setAttribute("href", "#" + headers[i].id);
+            a.setAttribute("title", headers[i].innerHTML);
+            a.innerHTML = headers[i].innerHTML;
+
+            li.appendChild(a)
+            scrollspy.appendChild(li);
+          }
+        } else {
+          scrollspy.parentElement.removeChild(scrollspy)
+        }
+
+
+        /* Add permanent link next to the headers */
+        var headers = document.querySelectorAll("h1, h2, h3, h4, h5, h6");
+
+        for(var i = 0; i < headers.length; i++) {
+            var a = document.createElement("a");
+            a.setAttribute("class", "headerlink");
+            a.setAttribute("href", "#" + headers[i].id);
+            a.setAttribute("title", "Permanent link")
+            a.innerHTML = "#";
+            headers[i].appendChild(a);
+        }
+      }
+    </script>
+
+    
+
+    <script src="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.8.0/highlight.min.js"></script>
+    <script>hljs.initHighlightingOnLoad();</script>
+  </body>
+</html>
+
