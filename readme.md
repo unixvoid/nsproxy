@@ -8,12 +8,12 @@ entries.
 
 Documentation
 =============
-All documentation is in the [github wiki](https://github.com/unixvoid/nsproxy/wiki)
-* [Configuration](https://github.com/unixvoid/nsproxy/wiki/Configuration)
-* [API](https://github.com/unixvoid/nsproxy/wiki/API)
-* [Basic Usage](https://github.com/unixvoid/nsproxy/wiki/Basic-Usage)
-* [Building](https://github.com/unixvoid/nsproxy/wiki/Building)
-* [Redis Usage](https://github.com/unixvoid/nsproxy/wiki/Redis-data-structures)
+All documentation is in the [github wiki](https://unixvoid.github.io/nsproxy)
+* [Configuration](https://unixvoid.github.io/nsproxy/configuration/)
+* [API](https://unixvoid.github.io/nsproxy/api/)
+* [Basic Usage](https://unixvoid.github.io/nsproxy/basic_usage/)
+* [Building](https://unixvoid.github.io/nsproxy/building/)
+* [Redis Usage](https://unixvoid.github.io/nsproxy/redis_data_structures/)
 
 Quickstart
 ==========
