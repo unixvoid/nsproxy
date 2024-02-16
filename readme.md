@@ -1,6 +1,5 @@
 Nsproxy
 =======
-[![Build Status (Travis)](https://travis-ci.org/unixvoid/nsproxy.svg?branch=develop)](https://travis-ci.org/unixvoid/nsproxy)  
 Nsproxy is a DNS proxy and cluster manager written in go.  This project acts as
 a normal DNS server (in addition to the cluster managment) and allows the use of
 custom DNS entries.  Currently nsproxy fully supports A, AAAA, and CNAME
