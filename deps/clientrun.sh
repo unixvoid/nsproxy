@@ -1,6 +1,6 @@
 #!/bin/sh
 
-# this is designed to be a generic runscript that is the be the command
+# this is designed to be a generic runscript that is to be the command
 # ran from all docker clients.  this script will take care of the
 # registration and then launch whatever app the container is for.
 

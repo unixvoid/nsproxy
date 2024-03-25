@@ -50,6 +50,10 @@ rundocker:
 			$(IMAGE_NAME)
 	sudo docker logs -f nsproxy
 
+rundockercompose:
+	cd deps/ && \
+		sudo docker-compose -f docker-compose.yml up
+
 stage:
 	make stat
 	mkdir -p stage.tmp/
